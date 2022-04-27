@@ -18,12 +18,12 @@ app.use(express.json());
 app.use(cookieParser(process.env.COOKIE_SECRET));
 
 // Testroute
-app.get('/test', cors(), (req, res) => {
+app.get('/test', (req, res) => {
   res.send('Hello world!!!');
 });
 
 // Send the Requester Informations about the BackEnd
-app.get('/info', cors(), (req, res) => {
+app.get('/info', (req, res) => {
   res.sendFile(path.join(__dirname, '../ReadMe.html'));
 });
 
