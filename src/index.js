@@ -18,9 +18,9 @@ const gameRoute = require('../routes/game');
 app.use(
   cors({
     origin: [
-      'http://93.198.222.25:3000',
-      'http://84.166.31.174:3000',
-      'http://84.166.31.174:8000',
+      'https://93.198.222.25:3000',
+      'https://84.166.31.174:3000',
+      'https://84.166.31.174:8000',
     ],
     credentials: true,
   })
