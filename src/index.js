@@ -35,6 +35,9 @@ app.use('/game', gameRoute);
 app.get('/test', cors({ origin: '*' }), (req, res) => {
   res.send('Hello world!!!');
 });
+app.get('/testcors', (req, res) => {
+  res.send('Hello world!!!');
+});
 
 // Send the Requester Informations about the BackEnd
 app.get('/info', cors({ origin: '*' }), (req, res) => {
