@@ -1,0 +1,308 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReadMe</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1 id="dont-fall-backend-docs">Don’t Fall - BackEnd Doc’s</h1>
+<p><em>Update Tuesday 26 April 2022</em></p>
+<h2 id="route-users">Route “/users”</h2>
+<p><strong>GET "/:id"</strong></p>
+<blockquote>
+<p><em>Example: “/users/62667b194b3052a298b127ad”</em></p>
+</blockquote>
+<ul>
+<li>Expection: UserID</li>
+<li>Return Example:</li>
+</ul>
+<blockquote>
+<p><code>{ 		"username": "aromaticMadella752", 		"id": "62667b194b3052a298b127ad", "token":"eyJhbGc...SM3XQKBAmOzZ2_9Aw", 		"currentSkin": "black", 		"experience": 0, 		"gold": 0, 		"level": 1, 	 "skins": [ 		 "red", 		 "blue", 		 "black" 	 ], 	 "friends": [], 	 "friendRequestsIncoming": [], 	 "friendRequestsOutgoing": [], 	 "isGuest": false }</code></p>
+</blockquote>
+<ul>
+<li>Return with bad ID: <code>"Error: ID invalid!"</code></li>
+</ul>
+<p><strong>POST "/update"</strong></p>
+<blockquote>
+<p><em>Example: “/users/update”</em></p>
+</blockquote>
+<ul>
+<li>Expection: <code>body = {id: &lt;userID&gt;}</code></li>
+<li>Optional: <code>body = {newUser, newPassword, newSkin, newEmail, oldPassword}</code></li>
+<li><code>newUser</code>: Must have valid UserID &amp; new Username in Body</li>
+<li><code>newPassword</code>: Must have valid UserID, valid old Password, new Password</li>
+<li><code>newEmail</code>: Must have valid UserID, valid old Password, new Email</li>
+<li><code>newSkin</code>: Must have valid UserID &amp; new Skin as String (e.g. “red”)</li>
+<li>Response: “Success”</li>
+</ul>
+<p><strong>GET "/delte?id="</strong></p>
+<blockquote>
+<p><em>Example: “users/delete?id=62667b194b3052a298b127ad”</em></p>
+</blockquote>
+<ul>
+<li>Expection: UserID in Query</li>
+<li>Return: <code>true</code> at success or <code>false</code> if not successfull</li>
+</ul>
+<p><strong>POST "/registration"</strong></p>
+<blockquote>
+<p><em>Example: “/users/registration”</em></p>
+</blockquote>
+<ul>
+<li>Expection: <code>body = {password, email}</code></li>
+<li>Return: <code>"Success"</code></li>
+</ul>
+<p><strong>POST /login</strong></p>
+<blockquote>
+<p><em>Example: “/users/login”</em></p>
+</blockquote>
+<ul>
+<li>Expection: Must have <code>body = {isGuest: true || false}</code></li>
+<li>Optional: <code>body = {email, password}</code></li>
+</ul>
+<blockquote>
+<p>If <code>isGuest === true</code>, it creates a new User with standard-Password &amp; Email (because they are requiered by the DB). Else if Guest is false, Email and Password are requiered!</p>
+</blockquote>
+<ul>
+<li>Returnexample (also returns a httpCookie) :</li>
+</ul>
+<blockquote>
+<p><code>{ 		"username": "aromaticMadella752", 		"id": "62667b194b3052a298b127ad", "token":"eyJhbGc...SM3XQKBAmOzZ2_9Aw", 		"currentSkin": "black", 		"experience": 0, 		"gold": 0, 		"level": 1, 	 "skins": [ 		 "red", 		 "blue", 		 "black" 	 ], 	 "friends": [], 	 "friendRequestsIncoming": [], 	 "friendRequestsOutgoing": [], 	 "isGuest": true || false (Depending on the isGuest-Boolean) }</code></p>
+</blockquote>
+<p><strong>POST "/setonline"</strong></p>
+<blockquote>
+<p><em>Example: “/users/setonline”</em></p>
+</blockquote>
+<ul>
+<li>Expection: <code>body = {userID, socketID, online: true || false (Is User coming Online = true or Leaving = false?)}</code></li>
+<li>Changing the Collection currentlyonlines &amp; the isOnline-Value in the users-Collection</li>
+<li>Response: <code>"Logged In"</code> || <code>"Logged Out"</code></li>
+</ul>
+<blockquote>
+<p>Usernames are random Generated. They are created as follows:</p>
+<pre><code>function generateName() {
+  const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+  const name = names[Math.floor(Math.random() * names.length)];
+  const number = Math.floor(Math.random() * 1000);
+
+  const result = adjective + name + number.toString();
+
+  return result;
+}
+
+They are build like this: Adejective + Name + RandomNumber ( Value between 0-999 )
+</code></pre>
+</blockquote>
+<h2 id="route-game">Route “/game”</h2>
+<p><strong>Route "/"</strong><br>
+<em>Example: “/game/”</em></p>
+<ul>
+<li>Options in Body:</li>
+</ul>
+<blockquote>
+<p>difficulty: easy || medium || hard<br>
+type: mutliple || boolean (If empty: mutliple)<br>
+amount: 1 - 50 (If empty: 10)<br>
+category: One of all Categories as String (Request /categories to see Options)</p>
+</blockquote>
+<ul>
+<li>Return an Array with Objects of Questions. Example:</li>
+</ul>
+<blockquote>
+<pre><code>[
+ {
+  "category": "Sports",
+  "type": "multiple",
+  "difficulty": "hard",
+  "question": "How many times did Martina Navratilova win the Wimbledon Singles Championship?",
+  "correct_answer": "Nine",
+  "incorrect_answers": [
+   "Ten",
+   "Seven",
+   "Eight"
+  ]
+ },
+ {
+  "category": "History",
+  "type": "multiple",
+  "difficulty": "medium",
+  "question": "Which of the following ancient Near Eastern peoples still exists as a modern ethnic group?",
+  "correct_answer": "Assyrians",
+  "incorrect_answers": [
+   "Babylonians",
+   "Hittites",
+   "Elamites"
+  ]
+ }
+]
+</code></pre>
+</blockquote>
+<p><strong>GET "/categories"</strong><br>
+<em>Example: “/users/categories”</em></p>
+<ul>
+<li>Return: Array with all possible Categorgies</li>
+</ul>
+<h2 id="changes">Changes:</h2>
+<ul>
+<li>Token in Header.Authorization is no more required:</li>
+</ul>
+<blockquote>
+<p>When an User or a Guest logs in, the BackEnd genereates an httpCookie. That Cookie is signed and secure and contains a JWT. For each Route, excepting “/login” &amp; “/registration”, the Cookie will be checked by JWT.</p>
+</blockquote>
+<ul>
+<li>Users can connect to the Socket:</li>
+</ul>
+<blockquote>
+<p>Each Dis-/Connect triggers the “/setonline”-Route. This means, that the “currentlyonlines”-Collection will be updatet in Realtime.</p>
+</blockquote>
+<ul>
+<li>Chat-Messages are now a Broadcast:</li>
+</ul>
+<blockquote>
+<p>A Message sended from a Client will be redirected to all other Client´s, excepting the sending Client.</p>
+</blockquote>
+<hr>
+<p><em>Update Monday 25 April 2022</em></p>
+<h2 id="route-users-1">Route “/users”</h2>
+<p><strong>GET "/:id"</strong></p>
+<blockquote>
+<p><em>Example: “/users/62667b194b3052a298b127ad”</em></p>
+</blockquote>
+<ul>
+<li>Expection: UserID, Token in Header.Authorization</li>
+<li>Return Example:</li>
+</ul>
+<blockquote>
+<p><code>{ 		"username": "aromaticMadella752", 		"id": "62667b194b3052a298b127ad", "token":"eyJhbGc...SM3XQKBAmOzZ2_9Aw", 		"currentSkin": "black", 		"experience": 0, 		"gold": 0, 		"level": 1, 	 "skins": [ 		 "red", 		 "blue", 		 "black" 	 ], 	 "friends": [], 	 "friendRequestsIncoming": [], 	 "friendRequestsOutgoing": [], 	 "isGuest": false }</code></p>
+</blockquote>
+<ul>
+<li>Return with bad ID: <code>"Error: ID invalid!"</code></li>
+</ul>
+<p><strong>POST "/update"</strong></p>
+<blockquote>
+<p><em>Example: “/users/update”</em></p>
+</blockquote>
+<ul>
+<li>Expection: Token in Header.Authorization, <code>body = {id: &lt;userID&gt;}</code></li>
+<li>Optional: <code>body = {newUser, newPassword, newSkin, newEmail, oldPassword}</code></li>
+<li><code>newUser</code>: Must have valid UserID &amp; new Username in Body</li>
+<li><code>newPassword</code>: Must have valid UserID, valid old Password, new Password</li>
+<li><code>newEmail</code>: Must have valid UserID, valid old Password, new Email</li>
+<li><code>newSkin</code>: Must have valid UserID &amp; new Skin as String (e.g. “red”)</li>
+<li>Response: “Success”</li>
+</ul>
+<p><strong>GET "/delte?id="</strong></p>
+<blockquote>
+<p><em>Example: “users/delete?id=62667b194b3052a298b127ad”</em></p>
+</blockquote>
+<ul>
+<li>Expection: UserID in Query, Token in Header.Authorization</li>
+<li>Return: <code>true</code> at success or <code>false</code> if not successfull</li>
+</ul>
+<p><strong>POST "/registration"</strong></p>
+<blockquote>
+<p><em>Example: “/users/registration”</em></p>
+</blockquote>
+<ul>
+<li>Expection: <code>body = {password, email}</code></li>
+<li>Return: <code>"Success"</code></li>
+</ul>
+<p><strong>POST /login</strong></p>
+<blockquote>
+<p><em>Example: “/users/login”</em></p>
+</blockquote>
+<ul>
+<li>Expection: Must have <code>body = {isGuest: true || false}</code></li>
+<li>Optional: <code>body = {email, password}</code></li>
+</ul>
+<blockquote>
+<p>If <code>isGuest === true</code>, it creates a new User with standard-Password &amp; Email (because they are requiered by the DB). Else if Guest is false, Email and Password are requiered!</p>
+</blockquote>
+<ul>
+<li>Returnexample:</li>
+</ul>
+<blockquote>
+<p><code>{ 		"username": "aromaticMadella752", 		"id": "62667b194b3052a298b127ad", "token":"eyJhbGc...SM3XQKBAmOzZ2_9Aw", 		"currentSkin": "black", 		"experience": 0, 		"gold": 0, 		"level": 1, 	 "skins": [ 		 "red", 		 "blue", 		 "black" 	 ], 	 "friends": [], 	 "friendRequestsIncoming": [], 	 "friendRequestsOutgoing": [], 	 "isGuest": true || false (Depending on the isGuest-Boolean) }</code></p>
+</blockquote>
+<p><strong>POST "/setonline"</strong></p>
+<blockquote>
+<p><em>Example: “/users/setonline”</em></p>
+</blockquote>
+<ul>
+<li>Expection: <code>body = {userID, socketID, online: true || false (Is User coming Online = true or Leaving = false?)}</code> &amp; Token in Header.Authorization</li>
+<li>Changing the Collection currentlyonlines &amp; the isOnline-Value in the users-Collection</li>
+<li>Response: <code>"Logged In"</code> || <code>"Logged Out"</code></li>
+</ul>
+<blockquote>
+<p>Usernames are random Generated. They are created as follows:</p>
+<pre><code>function generateName() {
+  const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+  const name = names[Math.floor(Math.random() * names.length)];
+  const number = Math.floor(Math.random() * 1000);
+
+  const result = adjective + name + number.toString();
+
+  return result;
+}
+
+They are build like this: Adejective + Name + RandomNumber ( Value between 0-999 )
+</code></pre>
+</blockquote>
+<h2 id="route-game-1">Route “/game”</h2>
+<p><strong>Route "/"</strong><br>
+<em>Example: “/game/”</em></p>
+<ul>
+<li>Expection: Token in Header.Authorization</li>
+<li>Options in Body:</li>
+</ul>
+<blockquote>
+<p>difficulty: easy || medium || hard<br>
+type: mutliple || boolean (If empty: mutliple)<br>
+amount: 1 - 50 (If empty: 10)<br>
+category: One of all Categories as String (Request /categories to see Options)</p>
+</blockquote>
+<ul>
+<li>Return an Array with Objects of Questions. Example:</li>
+</ul>
+<blockquote>
+<pre><code>[
+ {
+  "category": "Sports",
+  "type": "multiple",
+  "difficulty": "hard",
+  "question": "How many times did Martina Navratilova win the Wimbledon Singles Championship?",
+  "correct_answer": "Nine",
+  "incorrect_answers": [
+   "Ten",
+   "Seven",
+   "Eight"
+  ]
+ },
+ {
+  "category": "History",
+  "type": "multiple",
+  "difficulty": "medium",
+  "question": "Which of the following ancient Near Eastern peoples still exists as a modern ethnic group?",
+  "correct_answer": "Assyrians",
+  "incorrect_answers": [
+   "Babylonians",
+   "Hittites",
+   "Elamites"
+  ]
+ }
+]
+</code></pre>
+</blockquote>
+<p><strong>GET "/categories"</strong><br>
+<em>Example: “/users/categories”</em></p>
+<ul>
+<li>Expection: Token in Header.Authorization</li>
+<li>Return: Array with all possible Categorgies</li>
+</ul>
+</div>
+</body>
+
+</html>
