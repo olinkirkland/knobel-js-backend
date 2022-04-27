@@ -8,8 +8,8 @@
 
 - CORS:
 > Modified the allowed Origins, so only the FrontEnd can access the Routes. The following Routes are public (If you want access toall Routes mail me Kevin@KevinPoppe.com ) : 
-   - https://dontfall-backend.herokuapp.com/test
-   - https://dontfall-backend.herokuapp.com/info
+>   - https://dontfall-backend.herokuapp.com/test
+>   - https://dontfall-backend.herokuapp.com/info
  - The POST "/setonline"-Route is no more avaible:
  > Users get automatically setted online when they connect with the Socket. This should happen directly after the Login. Also the Users get logged out, as soon as they disconnect from the Socket.
  - Modified the User-Schema:
