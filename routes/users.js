@@ -12,6 +12,7 @@ const options = {
   maxAge: 1000 * 60 * 60 * 24, // Expires after 24h
   httpOnly: true,
   signed: true,
+  sameSite: "Lax"
 };
 
 router.post('/login', (req, res) => {
