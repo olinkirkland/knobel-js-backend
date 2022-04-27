@@ -19,7 +19,6 @@ function connect(app) {
 
   io.on('connection', (socket) => {
     console.log(socket.id, 'connected');
-
     // Add new User to currentlyonlines-Collection
     UserHandler.changeOnlineState(socket.request['_query'], socket.id);
 
@@ -35,6 +34,7 @@ function connect(app) {
     });
 
     socket.on('join-room', (room) => {
+      UserHandler.changeSocketRoom(socket.request['_query'], socket.id);
       console.log(`user joind Room ${room}`);
       socket.join(room);
     });

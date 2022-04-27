@@ -67,6 +67,10 @@ const userSchema = new Schema({
     type: String,
     required: false,
   },
+  currentRoom: {
+    type: String,
+    required: false,
+  },
 });
 
 const User = mongoose.model('User', userSchema);

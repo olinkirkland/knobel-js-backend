@@ -5,6 +5,7 @@ const Password = require('../controllers/Password');
 const UserSchema = require('../models/UserSchema');
 const CurrentlyOnlineSchema = require('../models/CurrentlyOnlineSchema');
 const User = require('../classes/User');
+const Friends = require('../models/FriendsSchema');
 
 const randomUserName = require('../classes/randomUsername');
 
@@ -42,6 +43,7 @@ async function createNewUser(password, isGuest, email) {
 
 async function getUserById(id) {
   // Get Userdata from users-Collection without critical data, like Password
+
   const user = await UserSchema.findById(id).catch(() => 'Error');
   return user === 'Error' || user === null
     ? 'Error: ID invalid!'
@@ -50,10 +52,10 @@ async function getUserById(id) {
 
 async function getUserBySocketID(socketID) {
   // Get Userdata from currentlyonlines-Collection
-
-  const user = await CurrentlyOnlineSchema.findOne({
+  const user = await UserSchema.findOne({
     socketID: socketID,
   }).catch(() => 'Error');
+
   return user === 'Error' || user === null ? 'Error: ID invalid!' : user;
 }
 
@@ -149,31 +151,76 @@ async function changeOnlineState(data, socketID) {
   if (!user) return 'Error: Wrong ID!';
 
   if (user !== null) {
-    // Update users-Collection >>> Change isOnline-Boolean
-    await UserSchema.findByIdAndUpdate(
-      { _id: user.id },
-      { isOnline: data.online }
-    );
-
-    if (!data.online) {
-      // If User logs out, delete him/her from currentlyonline-Collection
-      await CurrentlyOnlineSchema.deleteOne({ userID: user.id });
-      return 'Logged Out';
+    // Update users-Collection >>> Change isOnline-Boolean = true
+    if (data.online) {
+      await UserSchema.findByIdAndUpdate(
+        { _id: user.id },
+        { isOnline: data.online, socketID: socketID }
+      );
     }
 
-    if (!(await CurrentlyOnlineSchema.findById(user.id).catch())) {
-      // If User is not already in Collection, add him/her to currentlyonlines-Collection
-      await new CurrentlyOnlineSchema({
-        username: user.username,
-        isGuest: user.isGuest,
-        userID: user.id,
-        socketID: socketID,
-      }).save();
+    if (!data.online) {
+      // Update users-Collection >>> Change isOnline-Boolean = false
+      await UserSchema.findByIdAndUpdate(
+        { _id: currentUser._id },
+        { isOnline: data.online, socketID: '' }
+      );
+      return 'Logged Out';
     }
 
     return 'Logged In';
   } else {
     return 'Wrong ID. Please report to Admin';
+  }
+}
+
+async function changeSocketRoom(user, partner) {
+  let error = '';
+  const friendsID = uuidv4();
+
+  // Construct new Friendship and save in DB
+  await new Friends({
+    friendsID: friendsID,
+    users: [
+      {
+        username: user.username,
+        userID: user.userID,
+      },
+      {
+        username: partner.username,
+        userID: partner.userID,
+      },
+    ],
+  })
+    .save()
+    .catch((err) => (error = `Error: ${err}`));
+
+  // Get current User-Data and update the Friendslist with the Partnerdata
+  let userDB = await UserSchema.findById({ _id: user.userID });
+  userDB.friends.push({
+    userID: partner.userID,
+    username: partner.username,
+    friendsID: friendsID,
+  });
+  await UserSchema.findByIdAndUpdate(
+    { _id: user.userID },
+    { friends: userDB.friends }
+  ).catch((err) => (error = `Error: ${err}`));
+
+  // Get current Partner-Data and update the Friendslist with the User-data
+  let partnerDB = await UserSchema.findById({ _id: partner.userID });
+  partnerDB.friends
+    .push({
+      userID: user.userID,
+      username: user.username,
+      friendsID: friendsID,
+    })
+    .catch((err) => (error = `Error: ${err}`));
+
+  if (!error) {
+    return 'success';
+  } else {
+    return error;
   }
 }
 
@@ -185,4 +232,5 @@ module.exports = {
   updateUser,
   changeOnlineState,
   updateToken,
+  changeSocketRoom,
 };
