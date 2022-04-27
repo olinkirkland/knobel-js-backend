@@ -28,11 +28,11 @@ app.use('/users', usersRouter);
 app.use('/game', gameRoute);
 
 // Testroute
-app.get('/test', (req, res) => {
+app.get('/test', cors({ origin: '*' }), (req, res) => {
   res.send('Hello world!!!');
 });
 
 // Send the Requester Informations about the BackEnd
-app.get('/info', (req, res) => {
+app.get('/info', cors({ origin: '*' }), (req, res) => {
   res.sendFile(path.join(__dirname, '../ReadMe.html'));
 });
