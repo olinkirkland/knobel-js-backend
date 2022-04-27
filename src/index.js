@@ -14,25 +14,26 @@ connection(app);
 const usersRouter = require('../routes/users');
 const gameRoute = require('../routes/game');
 
-// Middlewares
-app.use(
-  cors({
-    origin: 'http://localhost:3000, *',
-    credentials: true,
-  })
-);
 app.use(express.json());
 app.use(cookieParser(process.env.COOKIE_SECRET));
 
-app.use('/users', usersRouter);
-app.use('/game', gameRoute);
-
 // Testroute
-app.get('/test', cors({ origin: '*' }), (req, res) => {
+app.get('/test', cors(), (req, res) => {
   res.send('Hello world!!!');
 });
 
 // Send the Requester Informations about the BackEnd
-app.get('/info', cors({ origin: '*' }), (req, res) => {
+app.get('/info', cors(), (req, res) => {
   res.sendFile(path.join(__dirname, '../ReadMe.html'));
 });
+
+// Middlewares
+app.use(
+  cors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+  })
+);
+
+app.use('/users', usersRouter);
+app.use('/game', gameRoute);
