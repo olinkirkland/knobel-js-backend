@@ -14,7 +14,7 @@ router.post('/login', (req, res) => {
     // Create new Guest with Standard PW and Email in DB
     UserHandler.createNewUser('123', true, 'GUEST@GUEST.de').then((result) => {
       // Send User-Object to Frontend & Generate new Token
-      const user = new User(result);
+      const user = new User.Full(result);
       CookieMaker.createCookie(true, user).then((cookieContent) => {
         // Send user-Model to FrontEnd
 
