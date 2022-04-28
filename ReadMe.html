@@ -10,41 +10,42 @@
 
 <body class="stackedit">
   <div class="stackedit__html"><h1 id="dont-fall---backend-docs">Don’t Fall - BackEnd Doc’s</h1>
-<p><em>Update Wednesday 27 April 2022</em></p>
+<p><em>Update Thursday 28 April 2022</em></p>
 <h2 id="changes">Changes:</h2>
 <ul>
-<li>Cookie Issues solved:</li>
+<li>GET “/:id”:</li>
 </ul>
 <blockquote>
-<p>To save the Cookie in the FrontEnd, you have to implement the following Code inside the Login-Fetch: <code>{ withCredentials: true }</code>. So your Fetch should look like this:<br>
-<code>axios.post( 'http://https://dontfall-backend.herokuapp.com/users/login', {password: '123abc', email: 'test@test.de', }, { withCredentials: true }).then((res) =&gt; console.log(res));</code></p>
+<p>Returns now the Email of the User. Deleted the Token in the Response</p>
 </blockquote>
 <ul>
-<li>
-<p>Deployed the BackEnd. You can access the BackEnd with the following URL: <a href="https://dontfall-backend.herokuapp.com/">https://dontfall-backend.herokuapp.com/</a></p>
-</li>
-<li>
-<p>CORS:</p>
-</li>
+<li>Added “/friends”-Route</li>
+<li>Added Multiple ID-Request:</li>
 </ul>
 <blockquote>
-<p>Modified the allowed Origins, so only the FrontEnd can access the Routes. The following Routes are public (If you want access toall Routes mail me <a href="mailto:Kevin@KevinPoppe.com">Kevin@KevinPoppe.com</a> ) :</p>
-<ul>
-<li><a href="https://dontfall-backend.herokuapp.com/test">https://dontfall-backend.herokuapp.com/test</a></li>
-<li><a href="https://dontfall-backend.herokuapp.com/info">https://dontfall-backend.herokuapp.com/info</a></li>
-</ul>
+<p>You can Request multiple UserID’s. For this request you have the send an Array with ID’s</p>
 </blockquote>
 <ul>
-<li>The POST “/setonline”-Route is no more avaible:</li>
+<li>Modified Cookies:</li>
 </ul>
 <blockquote>
-<p>Users get automatically setted online when they connect with the Socket. This should happen directly after the Login. Also the Users get logged out, as soon as they disconnect from the Socket.</p>
+<p>Cookies refresh now every hour. If your Cookie dosn’t Refresh fo 90min, the Token will be expired.</p>
 </blockquote>
 <ul>
-<li>Modified the User-Schema:</li>
+<li>You have to set in every Route (except “/login”, “/registration”, “/info”) <code>withCredentials: true</code></li>
+</ul>
+<h2 id="route-friends">Route “/friends”</h2>
+<p><strong>POST "/request"</strong></p>
+<blockquote>
+<p><em>Example: “/friends/request”</em></p>
+</blockquote>
+<ul>
+<li>Expection: A RequestGiverID &amp; RequestTargetID in the Body.</li>
+<li>Response: If Successful, you get Status 201 &amp; <code>"Created new Request to RequestTargetID"</code>. Else you get an Error-Code (400 Invalid ID or 512 DB Query Fail)</li>
 </ul>
 <blockquote>
-<p>Extended the Schema with a socketID &amp; currentRoom Key. They change automatically, as soon as the User joins a Room or Connects to the Socket</p>
+<p>Request-Example:<br>
+<code>axios.post("&lt;APP_URL&gt;/friends/request", {requestGiver: "123456789", requestTarget: "123417489"}).then((res) =&gt; console.log(res)).catch((err) =&gt; console.error(err))</code></p>
 </blockquote>
 <h2 id="route-users">Route “/users”</h2>
 <p><strong>GET "/:id"</strong></p>
@@ -56,11 +57,41 @@
 <li>Return Example:</li>
 </ul>
 <blockquote>
-<p><code>{ 		"username": "aromaticMadella752", 		"id": "62667b194b3052a298b127ad", "token":"eyJhbGc...SM3XQKBAmOzZ2_9Aw", 		"currentSkin": "black", 		"experience": 0, 		"gold": 0, 		"level": 1, 	 "skins": [ 		 "red", 		 "blue", 		 "black" 	 ], 	 "friends": [], 	 "friendRequestsIncoming": [], 	 "friendRequestsOutgoing": [], 	 "isGuest": false }</code></p>
+<p><code>{ 		"username": "aromaticMadella752", "email": "test@test.de" 		"id": "62667b194b3052a298b127ad", 		"currentSkin": "black", 		"experience": 0, 		"gold": 0, 		"level": 1, 	 "skins": [ 		 "red", 		 "blue", 		 "black" 	 ], 	 "friends": [], 	 "friendRequestsIncoming": [], 	 "friendRequestsOutgoing": [], 	 "isGuest": false }</code></p>
 </blockquote>
 <ul>
 <li>Return with bad ID: <code>"Error: ID invalid!"</code></li>
 </ul>
+<p><strong>GET "/multi/light</strong></p>
+<blockquote>
+<p><em>Example: "/users/multi/light</em></p>
+</blockquote>
+<ul>
+<li>Expection: An Array with ID’s in the Body. There must be at least one ID</li>
+<li>Response: An Array with light Information about the UserID’s in the Request</li>
+</ul>
+<blockquote>
+<p>Example:<br>
+Request.body:<br>
+<code>['6266786fb7b9cadee0dc53d1', '6267a022e071fbb752006e07']</code><br>
+Response:<br>
+<code>[ { "username": "freezingBetteanne411", "id": "6266786fb7b9cadee0dc53d1", "currentSkin": "blue", "experience": 0, "level": 1, "isGuest": false }, { "username": "sassyNoreen489", "id": "6267a022e071fbb752006e07", "currentSkin": "red", "experience": 0, "level": 1, "isGuest": true } ]</code></p>
+</blockquote>
+<p><strong>GET "/multi/medium</strong></p>
+<blockquote>
+<p><em>Example: "/users/multi/medium</em></p>
+</blockquote>
+<ul>
+<li>Expection: An Array with ID’s in the Body. There must be at least one ID</li>
+<li>Response: An Array with medium Information about the UserID’s in the Request</li>
+</ul>
+<blockquote>
+<p>Example:<br>
+Request.body:<br>
+<code>['6266786fb7b9cadee0dc53d1', '6267a022e071fbb752006e07']</code><br>
+Response:<br>
+<code>[ { "username": "freezingBetteanne411", "id": "6266786fb7b9cadee0dc53d1", "currentSkin": "blue", "experience": 0, "level": 1, "isGuest": false, "email": "Uwe@test.de", "gold": 0, "skins": [ "red", "blue", "black" ], "friends": [] }, { "username": "sassyNoreen489", "id": "6267a022e071fbb752006e07", "currentSkin": "red", "experience": 0, "level": 1, "isGuest": true, "email": "GUEST@GUEST.de", "gold": 0, "skins": [ "red", "blue", "black" ], "friends": [] } ]</code></p>
+</blockquote>
 <p><strong>POST "/update"</strong></p>
 <blockquote>
 <p><em>Example: “/users/update”</em></p>
@@ -177,8 +208,175 @@ category: One of all Categories as String (Request /categories to see Options)</
 </ul>
 <hr>
 <hr>
-<p><em>Update Tuesday 26 April 2022</em></p>
+<p><em>Update Wednesday 27 April 2022</em></p>
+<h2 id="changes-1">Changes:</h2>
+<ul>
+<li>Cookie Issues solved:</li>
+</ul>
+<blockquote>
+<p>To save the Cookie in the FrontEnd, you have to implement the following Code inside the Login-Fetch: <code>{ withCredentials: true }</code>. So your Fetch should look like this:<br>
+<code>axios.post( 'http://https://dontfall-backend.herokuapp.com/users/login', {password: '123abc', email: 'test@test.de', }, { withCredentials: true }).then((res) =&gt; console.log(res));</code></p>
+</blockquote>
+<ul>
+<li>
+<p>Deployed the BackEnd. You can access the BackEnd with the following URL: <a href="https://dontfall-backend.herokuapp.com/">https://dontfall-backend.herokuapp.com/</a></p>
+</li>
+<li>
+<p>CORS:</p>
+</li>
+</ul>
+<blockquote>
+<p>Modified the allowed Origins, so only the FrontEnd can access the Routes. The following Routes are public (If you want access toall Routes mail me <a href="mailto:Kevin@KevinPoppe.com">Kevin@KevinPoppe.com</a> ) :</p>
+<ul>
+<li><a href="https://dontfall-backend.herokuapp.com/test">https://dontfall-backend.herokuapp.com/test</a></li>
+<li><a href="https://dontfall-backend.herokuapp.com/info">https://dontfall-backend.herokuapp.com/info</a></li>
+</ul>
+</blockquote>
+<ul>
+<li>The POST “/setonline”-Route is no more avaible:</li>
+</ul>
+<blockquote>
+<p>Users get automatically setted online when they connect with the Socket. This should happen directly after the Login. Also the Users get logged out, as soon as they disconnect from the Socket.</p>
+</blockquote>
+<ul>
+<li>Modified the User-Schema:</li>
+</ul>
+<blockquote>
+<p>Extended the Schema with a socketID &amp; currentRoom Key. They change automatically, as soon as the User joins a Room or Connects to the Socket</p>
+</blockquote>
 <h2 id="route-users-1">Route “/users”</h2>
+<p><strong>GET "/:id"</strong></p>
+<blockquote>
+<p><em>Example: “/users/62667b194b3052a298b127ad”</em></p>
+</blockquote>
+<ul>
+<li>Expection: UserID</li>
+<li>Return Example:</li>
+</ul>
+<blockquote>
+<p><code>{ 		"username": "aromaticMadella752", 		"id": "62667b194b3052a298b127ad", "token":"eyJhbGc...SM3XQKBAmOzZ2_9Aw", 		"currentSkin": "black", 		"experience": 0, 		"gold": 0, 		"level": 1, 	 "skins": [ 		 "red", 		 "blue", 		 "black" 	 ], 	 "friends": [], 	 "friendRequestsIncoming": [], 	 "friendRequestsOutgoing": [], 	 "isGuest": false }</code></p>
+</blockquote>
+<ul>
+<li>Return with bad ID: <code>"Error: ID invalid!"</code></li>
+</ul>
+<p><strong>POST "/update"</strong></p>
+<blockquote>
+<p><em>Example: “/users/update”</em></p>
+</blockquote>
+<ul>
+<li>Expection: <code>body = {id: &lt;userID&gt;}</code></li>
+<li>Optional: <code>body = {newUser, newPassword, newSkin, newEmail, oldPassword}</code></li>
+<li><code>newUser</code>: Must have valid UserID &amp; new Username in Body</li>
+<li><code>newPassword</code>: Must have valid UserID, valid old Password, new Password</li>
+<li><code>newEmail</code>: Must have valid UserID, valid old Password, new Email</li>
+<li><code>newSkin</code>: Must have valid UserID &amp; new Skin as String (e.g. “red”)</li>
+<li>Response: “Success”</li>
+</ul>
+<p><strong>GET "/delte?id="</strong></p>
+<blockquote>
+<p><em>Example: “users/delete?id=62667b194b3052a298b127ad”</em></p>
+</blockquote>
+<ul>
+<li>Expection: UserID in Query</li>
+<li>Return: <code>true</code> at success or <code>false</code> if not successfull</li>
+</ul>
+<p><strong>POST "/registration"</strong></p>
+<blockquote>
+<p><em>Example: “/users/registration”</em></p>
+</blockquote>
+<ul>
+<li>Expection: <code>body = {password, email}</code></li>
+<li>Return: <code>"Success"</code></li>
+</ul>
+<p><strong>POST /login</strong></p>
+<blockquote>
+<p><em>Example: “/users/login”</em></p>
+</blockquote>
+<ul>
+<li>Expection: Must have <code>body = {isGuest: true || false}</code></li>
+<li>Optional: <code>body = {email, password}</code></li>
+</ul>
+<blockquote>
+<p>If <code>isGuest === true</code>, it creates a new User with standard-Password &amp; Email (because they are requiered by the DB). Else if Guest is false, Email and Password are requiered!</p>
+</blockquote>
+<ul>
+<li>Returnexample (also returns a httpCookie) :</li>
+</ul>
+<blockquote>
+<p><code>{ 		"username": "aromaticMadella752", 		"id": "62667b194b3052a298b127ad", "token":"eyJhbGc...SM3XQKBAmOzZ2_9Aw", 		"currentSkin": "black", 		"experience": 0, 		"gold": 0, 		"level": 1, 	 "skins": [ 		 "red", 		 "blue", 		 "black" 	 ], 	 "friends": [], 	 "friendRequestsIncoming": [], 	 "friendRequestsOutgoing": [], 	 "isGuest": true || false (Depending on the isGuest-Boolean) }</code></p>
+</blockquote>
+<blockquote>
+<p>Usernames are random Generated. They are created as follows:</p>
+<pre><code>function generateName() {
+  const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+  const name = names[Math.floor(Math.random() * names.length)];
+  const number = Math.floor(Math.random() * 1000);
+
+  const result = adjective + name + number.toString();
+
+  return result;
+}
+
+They are build like this: Adejective + Name + RandomNumber ( Value between 0-999 )
+</code></pre>
+</blockquote>
+<h2 id="route-game-1">Route “/game”</h2>
+<p><strong>Route "/"</strong></p>
+<blockquote>
+<p><em>Example: “/game/”</em></p>
+</blockquote>
+<ul>
+<li>Options in Body:</li>
+</ul>
+<blockquote>
+<p>difficulty: easy || medium || hard<br>
+type: mutliple || boolean (If empty: mutliple)<br>
+amount: 1 - 50 (If empty: 10)<br>
+category: One of all Categories as String (Request /categories to see Options)</p>
+</blockquote>
+<ul>
+<li>Return an Array with Objects of Questions. Example:</li>
+</ul>
+<blockquote>
+<pre><code>[
+ {
+  "category": "Sports",
+  "type": "multiple",
+  "difficulty": "hard",
+  "question": "How many times did Martina Navratilova win the Wimbledon Singles Championship?",
+  "correct_answer": "Nine",
+  "incorrect_answers": [
+   "Ten",
+   "Seven",
+   "Eight"
+  ]
+ },
+ {
+  "category": "History",
+  "type": "multiple",
+  "difficulty": "medium",
+  "question": "Which of the following ancient Near Eastern peoples still exists as a modern ethnic group?",
+  "correct_answer": "Assyrians",
+  "incorrect_answers": [
+   "Babylonians",
+   "Hittites",
+   "Elamites"
+  ]
+ }
+]
+</code></pre>
+</blockquote>
+<p><strong>GET "/categories"</strong></p>
+<blockquote>
+<p><em>Example: “/users/categories”</em></p>
+</blockquote>
+<ul>
+<li>Return: Array with all possible Categorgies</li>
+</ul>
+<hr>
+<hr>
+<p><em>Update Tuesday 26 April 2022</em></p>
+<h2 id="route-users-2">Route “/users”</h2>
 <p><strong>GET "/:id"</strong></p>
 <blockquote>
 <p><em>Example: “/users/62667b194b3052a298b127ad”</em></p>
@@ -263,7 +461,7 @@ category: One of all Categories as String (Request /categories to see Options)</
 They are build like this: Adejective + Name + RandomNumber ( Value between 0-999 )
 </code></pre>
 </blockquote>
-<h2 id="route-game-1">Route “/game”</h2>
+<h2 id="route-game-2">Route “/game”</h2>
 <p><strong>Route "/"</strong><br>
 <em>Example: “/game/”</em></p>
 <ul>
@@ -312,7 +510,7 @@ category: One of all Categories as String (Request /categories to see Options)</
 <ul>
 <li>Return: Array with all possible Categorgies</li>
 </ul>
-<h2 id="changes-1">Changes:</h2>
+<h2 id="changes-2">Changes:</h2>
 <ul>
 <li>Token in Header.Authorization is no more required:</li>
 </ul>
@@ -334,7 +532,7 @@ category: One of all Categories as String (Request /categories to see Options)</
 <hr>
 <hr>
 <p><em>Update Monday 25 April 2022</em></p>
-<h2 id="route-users-2">Route “/users”</h2>
+<h2 id="route-users-3">Route “/users”</h2>
 <p><strong>GET "/:id"</strong></p>
 <blockquote>
 <p><em>Example: “/users/62667b194b3052a298b127ad”</em></p>
@@ -419,7 +617,7 @@ category: One of all Categories as String (Request /categories to see Options)</
 They are build like this: Adejective + Name + RandomNumber ( Value between 0-999 )
 </code></pre>
 </blockquote>
-<h2 id="route-game-2">Route “/game”</h2>
+<h2 id="route-game-3">Route “/game”</h2>
 <p><strong>Route "/"</strong><br>
 <em>Example: “/game/”</em></p>
 <ul>
