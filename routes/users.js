@@ -21,7 +21,7 @@ router.post('/login', (req, res) => {
         res.cookie(
           cookieContent.name,
           cookieContent.token,
-          cookieContent.options
+          cookieContent.options 
         );
         res.send(user);
       });
@@ -38,7 +38,7 @@ router.post('/login', (req, res) => {
 
         if (check) {
           // Create new User without critical Data like Password etc
-          const user = new User(response[0]);
+          const user = new User.Full(response[0]);
 
           const token = JWT.generate(user.username, user.email, user.id);
 
