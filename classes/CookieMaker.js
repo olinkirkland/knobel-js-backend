@@ -7,6 +7,7 @@ const options = {
   signed: true,
   sameSite: 'none',
   secure: true,
+  path: '/',
 };
 
 async function createCookie(isGuest, user, token) {

@@ -7,6 +7,7 @@ const User = require('../classes/User');
 const CookieMaker = require('../classes/CookieMaker');
 
 const UserHandler = require('../controllers/UserHandler');
+const { cookie } = require('express/lib/response');
 
 router.post('/login', (req, res) => {
   if (req.body.isGuest) {
@@ -14,8 +15,9 @@ router.post('/login', (req, res) => {
     UserHandler.createNewUser('123', true, 'GUEST@GUEST.de').then((result) => {
       // Send User-Object to Frontend & Generate new Token
       const user = new User(result);
-      CookieMaker.createCookie(false, user).then((cookieContent) => {
+      CookieMaker.createCookie(true, user).then((cookieContent) => {
         // Send user-Model to FrontEnd
+
         res.cookie(
           cookieContent.name,
           cookieContent.token,
