@@ -108,4 +108,40 @@ router.get('/:id', JWT.check, (req, res) => {
   UserHandler.getUserById(req.params.id).then((response) => res.send(response));
 });
 
+router.post('/multi/medium', JWT.check, async (req, res) => {
+  const ids = req.body.idsArray;
+
+  let usersArray = [];
+  let temp;
+
+  for (let i = 0; i < ids.length; i++) {
+    temp = await UserHandler.getMediumUserById(ids[i]);
+    usersArray.push(temp);
+  }
+
+  if (usersArray.length > 0) {
+    res.status(200).send(usersArray);
+  } else {
+    res.status(204).send('No Content');
+  }
+});
+
+router.post('/multi/light', JWT.check, async (req, res) => {
+  const ids = req.body.idsArray;
+
+  let usersArray = [];
+  let temp;
+
+  for (let i = 0; i < ids.length; i++) {
+    temp = await UserHandler.getSmallUserById(ids[i]);
+    usersArray.push(temp);
+  }
+
+  if (usersArray.length > 0) {
+    res.status(200).send(usersArray);
+  } else {
+    res.status(204).send('No Content');
+  }
+});
+
 module.exports = router;

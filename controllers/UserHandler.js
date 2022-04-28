@@ -41,13 +41,31 @@ async function createNewUser(password, isGuest, email) {
   return isGuest ? newUser : 'Success';
 }
 
-async function getUserById(id) {
+async function getFullUserById(id) {
   // Get Userdata from users-Collection without critical data, like Password
 
   const user = await UserSchema.findById(id).catch(() => 'Error');
   return user === 'Error' || user === null
     ? 'Error: ID invalid!'
-    : new User(user, user.token);
+    : new User.Full(user);
+}
+
+async function getMediumUserById(id) {
+  // Get Userdata from users-Collection without critical data, like Password
+
+  const user = await UserSchema.findById(id).catch(() => 'Error');
+  return user === 'Error' || user === null
+    ? 'Error: ID invalid!'
+    : new User.Medium(user);
+}
+
+async function getSmallUserById(id) {
+  // Get Userdata from users-Collection without critical data, like Password
+
+  const user = await UserSchema.findById(id).catch(() => 'Error');
+  return user === 'Error' || user === null
+    ? 'Error: ID invalid!'
+    : new User.Small(user);
 }
 
 async function getUserBySocketID(socketID) {
@@ -226,7 +244,9 @@ async function changeSocketRoom(user, partner) {
 
 module.exports = {
   createNewUser,
-  getUserById,
+  getFullUserById,
+  getMediumUserById,
+  getSmallUserById,
   getUserByMail,
   deleteUser,
   updateUser,
