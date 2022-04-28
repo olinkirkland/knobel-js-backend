@@ -13,15 +13,12 @@ connection(app);
 // Routes
 const usersRouter = require('../routes/users');
 const gameRoute = require('../routes/game');
-// const freindsRoute = require("../routes/friends") //! HIER
+const friendsRoute = require('../routes/friends');
 
 // Middlewares
 app.use(
   cors({
-    origin: [
-      'http://localhost:3000',
-      'http://localhost:8000',
-    ],
+    origin: ['http://localhost:3000', 'http://localhost:8000'],
     credentials: true,
   })
 );
@@ -30,6 +27,7 @@ app.use(cookieParser(process.env.COOKIE_SECRET));
 
 app.use('/users', usersRouter);
 app.use('/game', gameRoute);
+app.use('/friends', friendsRoute);
 
 // Testroute
 app.get('/test', cors({ origin: '*' }), (req, res) => {

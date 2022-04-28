@@ -5,7 +5,7 @@ const Password = require('../controllers/Password');
 const UserSchema = require('../models/UserSchema');
 const CurrentlyOnlineSchema = require('../models/CurrentlyOnlineSchema');
 const User = require('../classes/User');
-const Friends = require('../models/FriendsSchema');
+const FriendsSchema = require('../models/FriendsSchema');
 
 const randomUserName = require('../classes/randomUsername');
 
@@ -197,7 +197,7 @@ async function changeSocketRoom(user, partner) {
   const friendsID = uuidv4();
 
   // Construct new Friendship and save in DB
-  await new Friends({
+  await new FriendsSchema({
     friendsID: friendsID,
     users: [
       {
