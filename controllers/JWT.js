@@ -12,7 +12,8 @@ const options = {
   path: '/',
 };
 
-const maxAge = 3600; // Define the maxAge for the Token in seconds! <<<<<<<<<<<<
+const maxAge = 3600; // Define the the age, the Token should get refreshed! <<<<<<<<<<<<
+const maxAgeToken = 3600 * 24; // Define the maxAge for the Token in seconds! <<<<<<<<<<<<
 
 function generate(username, email, id) {
   // Returns a new Token generated with a secret Password. Contents: Username, Timestamp in s (iat)
@@ -37,7 +38,7 @@ function check(req, res, next) {
   return jwt.verify(
     token,
     process.env.SECRET,
-    { maxAge: maxAge + 1800 },
+    { maxAge: maxAgeToken },
     (err, decode) => {
       const currentTime = new Date().getTime() / 1000;
 
