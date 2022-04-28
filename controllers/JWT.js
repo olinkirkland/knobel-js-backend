@@ -2,7 +2,17 @@ require('dotenv').config();
 
 const jwt = require('jsonwebtoken');
 
-const maxAge = '24h'; // Define the maxAge for the Token! <<<<<<<<<<<<
+// Configs for Cookie-Security
+const options = {
+  maxAge: 1000 * 60 * 60 * 24, // Expires after 24h
+  httpOnly: true,
+  signed: true,
+  sameSite: 'none',
+  secure: true,
+  path: '/',
+};
+
+const maxAge = 3600; // Define the maxAge for the Token in seconds! <<<<<<<<<<<<
 
 function generate(username, email, id) {
   // Returns a new Token generated with a secret Password. Contents: Username, Timestamp in s (iat)
@@ -24,23 +34,38 @@ function check(req, res, next) {
   // Extract Token from Request-Cookie
   const token = req.signedCookies.Token;
 
-  return jwt.verify(token, process.env.SECRET, { maxAge: maxAge }, (err) => {
-    if (err) {
-      // Handle Errors
+  return jwt.verify(
+    token,
+    process.env.SECRET,
+    { maxAge: maxAge + 1800 },
+    (err, decode) => {
+      const currentTime = new Date().getTime() / 1000;
 
-      if (err.name === 'TokenExpiredError') {
-        res.send(`TokenExpiredError: Expired at ${err.expiredAt}`);
-      } else if (err.name === 'invalid token') {
-        res.send(`Token is not Valid!`);
-      } else {
-        res.send(err);
+      if (currentTime - decode.iat >= maxAge) {
+        res.cookie(
+          'Token',
+          generate(decode.username, decode.email, decode.id),
+          options
+        );
       }
-    } else {
-      // If Token is valid
 
-      next();
+      if (err) {
+        // Handle Errors
+
+        if (err.name === 'TokenExpiredError') {
+          res.send(`TokenExpiredError: Expired at ${err.expiredAt}`);
+        } else if (err.name === 'invalid token') {
+          res.send(`Token is not Valid!`);
+        } else {
+          res.send(err);
+        }
+      } else {
+        // If Token is valid
+
+        next();
+      }
     }
-  });
+  );
 }
 
 module.exports = { generate, check };
