@@ -19,8 +19,15 @@ function connect(app) {
 
   io.on('connection', (socket) => {
     console.log(socket.id, 'connected');
+
+    const data = {
+      userID: socket.request['_query'].userID,
+      online: true,
+      username: socket.request['_query'].username,
+    };
+
     // Add new User to currentlyonlines-Collection
-    UserHandler.changeOnlineState(socket.request['_query'], socket.id);
+    UserHandler.changeOnlineState(data, socket.id);
 
     socket.on('disconnect', () => {
       // Console.log Disconnect-Message & Update currentlyonlines-Collection

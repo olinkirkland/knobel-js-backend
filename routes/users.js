@@ -4,17 +4,9 @@ const router = express.Router();
 const Password = require('../controllers/Password');
 const JWT = require('../controllers/JWT');
 const User = require('../classes/User');
+const CookieMaker = require('../classes/CookieMaker');
 
 const UserHandler = require('../controllers/UserHandler');
-
-// Configs for Cookie-Security
-const options = {
-  maxAge: 1000 * 60 * 60 * 24, // Expires after 24h
-  httpOnly: true,
-  signed: true,
-  sameSite: 'none',
-  secure: true,
-};
 
 router.post('/login', (req, res) => {
   if (req.body.isGuest) {
@@ -22,14 +14,15 @@ router.post('/login', (req, res) => {
     UserHandler.createNewUser('123', true, 'GUEST@GUEST.de').then((result) => {
       // Send User-Object to Frontend & Generate new Token
       const user = new User(result);
-
-      // Send Cookie with new Token to FrontEnd
-      res.cookie(
-        'Token',
-        JWT.generate(user.username, user.email, user.id),
-        options
-      );
-      res.send(user);
+      CookieMaker.createCookie(false, user).then((cookieContent) => {
+        // Send user-Model to FrontEnd
+        res.cookie(
+          cookieContent.name,
+          cookieContent.token,
+          cookieContent.options
+        );
+        res.send(user);
+      });
     });
   } else {
     UserHandler.getUserByMail(req.body.email).then((response) => {
@@ -49,10 +42,15 @@ router.post('/login', (req, res) => {
 
           // Update Token in DB
           UserHandler.updateToken(user.id, token);
-
-          // Send Cookie with new Token to FrontEnd, then send user-Model
-          res.cookie('Token', token, options);
-          res.send(user);
+          CookieMaker.createCookie(false, user, token).then((cookieContent) => {
+            // Send user-Model to FrontEnd
+            res.cookie(
+              cookieContent.name,
+              cookieContent.token,
+              cookieContent.options
+            );
+            res.send(user);
+          });
         } else {
           // If Password is incorrect
           res.status(401).send('Wrong Password!');

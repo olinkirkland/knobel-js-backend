@@ -2,6 +2,7 @@ class User {
   // Create User-Object for Response to Frontend without critical Data like Password
   constructor(data, token) {
     this.username = data.username;
+    this.email = data.email;
     this.id = data._id;
     this.token = token;
     this.currentSkin = data.currentSkin;
