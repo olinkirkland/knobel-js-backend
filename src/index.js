@@ -13,12 +13,12 @@ connection(app);
 // Routes
 const usersRouter = require('../routes/users');
 const gameRoute = require('../routes/game');
+const freindsRoute = require("../routes/friends") //! HIER
 
 // Middlewares
 app.use(
   cors({
     origin: [
-      'http://localhost:3000',
       'http://localhost:3000',
       'http://localhost:8000',
     ],

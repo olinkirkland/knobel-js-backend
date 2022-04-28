@@ -97,7 +97,7 @@ async function updateUser(
   newEmail
 ) {
   // Get all Userdata´s from users-Collection, including critical data (like Password)
-  const user = await getUserById(id);
+  const user = await getFullUserById(id);
 
   // If no User was found, return with Error
   if (!user) return 'Error: Wrong ID!';
@@ -163,7 +163,7 @@ async function changeOnlineState(data, socketID) {
     currentUser === 'Error: ID invalid!' ? data.userID : currentUser.userID;
 
   // Get User by ID
-  const user = await getUserById(id);
+  const user = await getFullUserById(id);
 
   // If now User is null, return Error
   if (!user) return 'Error: Wrong ID!';

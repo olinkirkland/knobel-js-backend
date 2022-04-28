@@ -7,7 +7,6 @@ const User = require('../classes/User');
 const CookieMaker = require('../classes/CookieMaker');
 
 const UserHandler = require('../controllers/UserHandler');
-const { cookie } = require('express/lib/response');
 
 router.post('/login', (req, res) => {
   if (req.body.isGuest) {
@@ -21,7 +20,7 @@ router.post('/login', (req, res) => {
         res.cookie(
           cookieContent.name,
           cookieContent.token,
-          cookieContent.options 
+          cookieContent.options
         );
         res.send(user);
       });
