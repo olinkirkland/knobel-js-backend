@@ -13,7 +13,7 @@ connection(app);
 // Routes
 const usersRouter = require('../routes/users');
 const gameRoute = require('../routes/game');
-const freindsRoute = require("../routes/friends") //! HIER
+// const freindsRoute = require("../routes/friends") //! HIER
 
 // Middlewares
 app.use(
