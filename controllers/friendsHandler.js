@@ -81,19 +81,28 @@ async function acceptRequest(requestGiver, requestTarget) {
     _id: requestGiver,
   }).catch(() => (error = 512));
 
+  if (error !== '') return error;
+
   // Check if Query was successful
   if (currentRequestGiver == 'undefined' || currentRequestGiver == null)
     return 400;
+
   // Remove Request
   currentRequestGiver.friendRequestsOutgoing.splice(
     currentRequestGiver.friendRequestsOutgoing.indexOf(requestTarget),
     1
   );
 
+  // Add new Friend to friends
+  currentRequestGiver.friends.push(requestTarget);
+
   // Update DB
   await UserSchema.findByIdAndUpdate(
     { _id: requestGiver },
-    { friendRequestsOutgoing: currentRequestGiver.friendRequestsOutgoing }
+    {
+      friendRequestsOutgoing: currentRequestGiver.friendRequestsOutgoing,
+      friends: currentRequestGiver.friends,
+    }
   ).catch((err) => (error = err));
 
   /*    ****    ****    ****    */
@@ -110,14 +119,21 @@ async function acceptRequest(requestGiver, requestTarget) {
     return 400;
 
   // Remove Request
-  currentRequestTarget.friendRequestsOutgoing.splice(
-    currentRequestTarget.friendRequestsOutgoing.indexOf(requestGiver),
+  currentRequestTarget.friendRequestsIncoming.splice(
+    currentRequestTarget.friendRequestsIncoming.indexOf(requestGiver),
     1
   );
+
+  // Add new Friend to friends
+  currentRequestTarget.friends.push(requestGiver);
+
   // Update DB
   await UserSchema.findByIdAndUpdate(
     { _id: requestTarget },
-    { friendRequestsIncoming: currentRequestTarget.friendRequestsIncoming }
+    {
+      friendRequestsIncoming: currentRequestTarget.friendRequestsIncoming,
+      friends: currentRequestTarget.friends,
+    }
   ).catch((err) => (error = err));
 
   /*    ****    ****    ****    */
@@ -133,11 +149,11 @@ async function acceptRequest(requestGiver, requestTarget) {
   /*           Socket           */
   /*    ****    ****    ****    */
 
-  if (requestGiver.isOnline) {
-    socket
-      .to(requestGiver.socketID)
-      .emit('friend-request-accepted', requestTarget.userID);
-  }
+  // if (requestGiver.isOnline) {
+  //   socket
+  //     .to(requestGiver.socketID)
+  //     .emit('friend-request-accepted', requestTarget.userID);
+  // }
 
   // If an Error occured, return false
   if (error !== '') return error;

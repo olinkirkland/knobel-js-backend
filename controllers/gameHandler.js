@@ -1,5 +1,8 @@
 const axios = require('axios');
 
+const UserHandler = require('./UserHandler');
+const UserSchema = require('../models/UserSchema');
+
 async function getQuestions(options) {
   // Extract Options
 
@@ -52,6 +55,30 @@ function categoriesCatalog() {
     'Anime & Manga',
     'Cartoon & Animations',
   ];
+}
+
+async function checkLevel(userID) {
+  let user = await UserHandler.getFullUserById(userID);
+  let requiredXP = 100 + ((user.level / 7) ^ 2);
+  let lvlUp = true;
+
+  if (user.experience >= requiredXP) {
+    do {
+      user.level++;
+      user.experience = user.experience - requiredXP;
+      requiredXP = (100 + user.level / 7) ^ 2;
+      lvlUp = user.experience >= requiredXP ? true : false;
+    } while (lvlUp);
+
+    UserSchema.findByIdAndUpdate(
+      { _id: userID },
+      { level: user.level, experience: user.experience }
+    ).catch((err) => console.log(err));
+
+    return 228;
+  } else {
+    return 227;
+  }
 }
 
 function getCategoryID(category) {
@@ -135,4 +162,4 @@ function getCategoryID(category) {
   }
 }
 
-module.exports = { getQuestions, categoriesCatalog };
+module.exports = { getQuestions, categoriesCatalog, checkLevel };
