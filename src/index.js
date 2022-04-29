@@ -14,6 +14,7 @@ connection(app);
 const usersRouter = require('../routes/users');
 const gameRoute = require('../routes/game');
 const friendsRoute = require('../routes/friends');
+const cheatRoute = require('../routes/cheat');
 
 // Middlewares
 app.use(
@@ -28,6 +29,7 @@ app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use('/users', usersRouter);
 app.use('/game', gameRoute);
 app.use('/friends', friendsRoute);
+app.use('/cheat', cheatRoute);
 
 app.get('/testcors', (req, res) => {
   res.send('Hello world!!!');
