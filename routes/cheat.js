@@ -13,6 +13,8 @@ router.post(
     let id = req.body.userID;
     let error = '';
 
+    console.log('cheating...');
+
     if (typeof xp !== 'undefined') {
       xp = xp < 0 ? xp * -1 : xp;
       options = { experience: xp };
