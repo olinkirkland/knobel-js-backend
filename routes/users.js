@@ -5,7 +5,7 @@ const Password = require('../controllers/Password');
 const JWT = require('../controllers/JWT');
 const User = require('../classes/User');
 const CookieMaker = require('../classes/CookieMaker');
-const DataValidator = require('../controllers/DataVelidator');
+const DataValidator = require('../controllers/DataValidator');
 
 const UserHandler = require('../controllers/UserHandler');
 
@@ -22,7 +22,7 @@ router.post('/login', DataValidator.checkEmail, (req, res) => {
           cookieContent.name,
           cookieContent.token,
           cookieContent.options
-        );
+        ); 
         res.send(user);
       });
     });

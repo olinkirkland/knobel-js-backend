@@ -87,6 +87,7 @@ async function getUserByMail(email) {
 async function deleteUser(id) {
   // Delete a User from users-Collection
   const deletedCount = (await UserSchema.deleteOne({ _id: id })).deletedCount;
+  console.log('deleted', deletedCount);
   return deletedCount === 0 ? false : true;
 }
 
@@ -199,11 +200,17 @@ async function changeOnlineState(data, socketID) {
     }
 
     if (!data.online) {
-      // Update users-Collection >>> Change isOnline-Boolean = false
-      await UserSchema.findByIdAndUpdate(
-        { _id: currentUser._id },
-        { isOnline: data.online, socketID: '' }
-      );
+      if (currentUser.isGuest) {
+        console.log('HEY');
+        deleteUser(currentUser.id);
+      } else {
+        // Update users-Collection >>> Change isOnline-Boolean = false
+        await UserSchema.findByIdAndUpdate(
+          { _id: currentUser._id },
+          { isOnline: data.online, socketID: '' }
+        );
+      }
+
       return 'Logged Out';
     }
 
