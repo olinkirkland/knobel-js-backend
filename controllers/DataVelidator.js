@@ -5,6 +5,7 @@ async function checkEmail(req, res, next) {
 
   if (req.body.isGuest) {
     next();
+    return;
   }
 
   if (!req.body.newEmail) {
