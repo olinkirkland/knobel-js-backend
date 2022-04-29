@@ -7,10 +7,10 @@ const UserSchema = require('../models/UserSchema');
 router.post(
   '/',
   /* JWT.check, */ (req, res) => {
-    const xp = req.query.xp;
-    const gold = req.query.gold;
-    const lvl = req.query.lvl;
-    const id = req.body.userID;
+    let xp = req.query.xp;
+    let gold = req.query.gold;
+    let lvl = req.query.lvl;
+    let id = req.body.userID;
     let error = '';
 
     if (typeof xp !== 'undefined') {
