@@ -42,3 +42,8 @@ app.get('/testcors', (req, res) => {
 app.get('/info', cors({ origin: '*' }), (req, res) => {
   res.sendFile(path.join(__dirname, '../ReadMe.html'));
 });
+
+// Send the Requester Informations about the ErrorCodes
+app.get('/errorcodes', cors({ origin: '*' }), (req, res) => {
+  res.sendFile(path.join(__dirname, '../ErrorCodes.html'));
+});
