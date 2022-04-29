@@ -12,6 +12,18 @@
 - Implemented Functions for Leveling.
 - Added a mysterious Feature
 
+## Info-Routes
+
+**GET "/info"**
+> *Example: "/info"*
+- Expection: Nothing. No Token needed. No CORS-Origin declared
+- Returns the Documentation
+
+**GET "/errorcodes"**
+>*Example: "/errorcodes"*
+- Expection: Nothing. No Token needed. No CORS-Origin declared
+- Returns the Documentation for all Error-Codes you can recieve
+
 ## Route "/friends"
 **POST "/request"**
 > *Example: "/friends/request"*
