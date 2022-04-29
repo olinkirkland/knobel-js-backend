@@ -71,7 +71,7 @@ router.post('/registration', (req, res) => {
   );
 });
 
-router.post('/upgrade', (req, res) => {
+router.post('/upgrade', JWT.check, (req, res) => {
   // Upgrade Guest to User
   UserHandler.upgradeGuest(
     req.body.email,
