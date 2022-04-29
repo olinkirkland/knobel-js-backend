@@ -14,10 +14,13 @@ router.post(
     let error = '';
 
     if (typeof xp !== 'undefined') {
+      xp = xp < 0 ? xp * -1 : xp;
       options = { experience: xp };
     } else if (typeof gold !== 'undefined') {
+      gold = gold < 0 ? gold * -1 : gold;
       options = { gold: gold };
     } else if (typeof lvl !== 'undefined') {
+      lvl = lvl < 0 ? lvl * -1 : lvl;
       options = { lvl: lvl };
     }
     UserSchema.findByIdAndUpdate({ _id: id }, options).catch((err) => {
