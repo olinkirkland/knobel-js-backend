@@ -64,14 +64,14 @@ router.post('/login', (req, res) => {
   }
 });
 
-router.post('/registration', (req, res) => {
+router.post('/registrationTest', (req, res) => {
   // Create new User in DB
   UserHandler.createNewUser(req.body.password, false, req.body.email).then(
     res.send('Success')
   );
 });
 
-router.post('/upgrade', JWT.check, (req, res) => {
+router.post('/registration', JWT.check, (req, res) => {
   // Upgrade Guest to User
   UserHandler.upgradeGuest(
     req.body.email,
