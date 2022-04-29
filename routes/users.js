@@ -5,10 +5,11 @@ const Password = require('../controllers/Password');
 const JWT = require('../controllers/JWT');
 const User = require('../classes/User');
 const CookieMaker = require('../classes/CookieMaker');
+const DataValidator = require('../controllers/DataVelidator');
 
 const UserHandler = require('../controllers/UserHandler');
 
-router.post('/login', (req, res) => {
+router.post('/login', DataValidator.checkEmail, (req, res) => {
   if (req.body.isGuest) {
     // Create new Guest with Standard PW and Email in DB
     UserHandler.createNewUser('123', true, 'GUEST@GUEST.de').then((result) => {
@@ -64,34 +65,43 @@ router.post('/login', (req, res) => {
   }
 });
 
-router.post('/registrationTest', (req, res) => {
-  // Create new User in DB
-  UserHandler.createNewUser(req.body.password, false, req.body.email).then(
-    res.send('Success')
-  );
+router.post('/registrationTest', DataValidator.checkEmail, (req, res) => {
+  if (process.env.DEV) {
+    // Create new User in DB
+    UserHandler.createNewUser(req.body.password, false, req.body.email).then(
+      res.send('Success')
+    );
+  } else {
+    res.status(401).send('Only for Development');
+  }
 });
 
-router.post('/registration', JWT.check, (req, res) => {
-  // Upgrade Guest to User
-  UserHandler.upgradeGuest(
-    req.body.email,
-    req.body.password,
-    req.body.userID
-  ).then((response) => {
-    console.log(response);
-    if (response === 400) {
-      res.status(400).send('Error: ID invalid. Please contact Support');
-    } else if (response === 404) {
-      res
-        .status(404)
-        .send('No User found with that ID. Please contact Support');
-    } else if (response === 201) {
-      res.status(201).send('Success');
-    } else {
-      res.status(500).send('Server Failed. Please contact Support');
-    }
-  });
-});
+router.post(
+  '/registration',
+  JWT.check,
+  DataValidator.checkEmail,
+  (req, res) => {
+    // Upgrade Guest to User
+    UserHandler.upgradeGuest(
+      req.body.email,
+      req.body.password,
+      req.body.userID
+    ).then((response) => {
+      console.log(response);
+      if (response === 400) {
+        res.status(400).send('Error: ID invalid. Please contact Support');
+      } else if (response === 404) {
+        res
+          .status(404)
+          .send('No User found with that ID. Please contact Support');
+      } else if (response === 201) {
+        res.status(201).send('Success');
+      } else {
+        res.status(500).send('Server Failed. Please contact Support');
+      }
+    });
+  }
+);
 
 router.get('/delete', JWT.check, (req, res) => {
   // Delete a User in DB
@@ -99,7 +109,7 @@ router.get('/delete', JWT.check, (req, res) => {
   UserHandler.deleteUser(id).then((response) => res.send(response));
 });
 
-router.post('/update', JWT.check, (req, res) => {
+router.post('/update', JWT.check, DataValidator.checkEmail, (req, res) => {
   // Update User | Must recieve ID!
   UserHandler.updateUser(
     req.body.id,
