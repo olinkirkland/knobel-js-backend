@@ -71,6 +71,18 @@ const userSchema = new Schema({
     type: String,
     required: false,
   },
+  nameChanges: {
+    required: true,
+    type: Number,
+  },
+  currentAvatar: {
+    required: true,
+    type: String,
+  },
+  avaibleAvatars: {
+    type: Array,
+    required: false,
+  },
 });
 
 const User = mongoose.model('User', userSchema);

@@ -1,5 +1,4 @@
 const http = require('http');
-const { Socket } = require('socket.io');
 
 require('dotenv').config();
 
@@ -41,7 +40,7 @@ function connect(app) {
     });
 
     socket.on('join-room', (room) => {
-      UserHandler.changeSocketRoom(socket.request['_query'], socket.id);
+      // UserHandler.changeSocketRoom(socket.request['_query'], socket.id);
       console.log(`user joind Room ${room}`);
       socket.join(room);
     });
@@ -57,11 +56,6 @@ function connect(app) {
       });
     })
     .catch((err) => console.log('ERROR:', err));
-
-  // Exit the process on Ctrl+C
-  process.on('SIGINT', function () {
-    process.exit(0);
-  });
 }
 
 module.exports = connect;

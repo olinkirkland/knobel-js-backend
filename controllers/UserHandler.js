@@ -33,6 +33,8 @@ async function createNewUser(password, isGuest, email) {
     friends: [],
     friendRequestsIncoming: [],
     friendRequestsOutgoing: [],
+    nameChanges: 0,
+    currentAvatar: `https://avatars.dicebear.com/api/personas/${username}.svg`,
   });
 
   await newUser.save();
@@ -149,6 +151,25 @@ async function updateUser(
   }
 }
 
+async function upgradeGuest(email, password, id) {
+  // Get all Userdata´s from users-Collection, including critical data (like Password)
+  const user = await getFullUserById(id);
+
+  // If no User was found, return with 404. If ID is invalid, return 400
+  if (!user) return 404;
+  if (user === 'Error: ID invalid!') return 400;
+
+  const hashed = Password.encrypt(password);
+
+  if (user !== null) {
+    await UserSchema.findByIdAndUpdate(
+      { _id: id },
+      { password: hashed, email: email, isGuest: false, nameChanges: 1 }
+    );
+    return 201;
+  }
+}
+
 async function updateToken(id, token) {
   // Return a new Token, if the old one is expired
   await UserSchema.findByIdAndUpdate({ _id: id }, { token: token });
@@ -253,4 +274,5 @@ module.exports = {
   changeOnlineState,
   updateToken,
   changeSocketRoom,
+  upgradeGuest,
 };

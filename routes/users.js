@@ -71,6 +71,28 @@ router.post('/registration', (req, res) => {
   );
 });
 
+router.post('/upgrade', (req, res) => {
+  // Upgrade Guest to User
+  UserHandler.upgradeGuest(
+    req.body.email,
+    req.body.password,
+    req.body.userID
+  ).then((response) => {
+    console.log(response);
+    if (response === 400) {
+      res.status(400).send('Error: ID invalid. Please contact Support');
+    } else if (response === 404) {
+      res
+        .status(404)
+        .send('No User found with that ID. Please contact Support');
+    } else if (response === 201) {
+      res.status(201).send('Success');
+    } else {
+      res.status(500).send('Server Failed. Please contact Support');
+    }
+  });
+});
+
 router.get('/delete', JWT.check, (req, res) => {
   // Delete a User in DB
   const id = req.query.id;
