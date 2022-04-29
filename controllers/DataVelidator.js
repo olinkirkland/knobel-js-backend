@@ -3,6 +3,10 @@ async function checkEmail(req, res, next) {
   var tester =
     /^[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~](\.?[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
 
+  if (req.body.isGuest) {
+    next();
+  }
+
   if (!req.body.newEmail) {
     const email = req.body.email;
 
