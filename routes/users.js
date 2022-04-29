@@ -27,7 +27,7 @@ router.post('/login', DataValidator.checkEmail, (req, res) => {
       });
     });
   } else {
-    UserHandler.getUserByMail(req.body.email).then((response) => {
+    UserHandler.getUserByMail(req.body.email.toLowerCase()).then((response) => {
       if (response.length > 0) {
         // check Password with BCrypt and recieve new Token
         const check = Password.check(
@@ -40,7 +40,11 @@ router.post('/login', DataValidator.checkEmail, (req, res) => {
           // Create new User without critical Data like Password etc
           const user = new User.Full(response[0]);
 
-          const token = JWT.generate(user.username, user.email, user.id);
+          const token = JWT.generate(
+            user.username,
+            user.email.toLowerCase(),
+            user.id
+          );
 
           // Update Token in DB
           UserHandler.updateToken(user.id, token);
@@ -68,9 +72,11 @@ router.post('/login', DataValidator.checkEmail, (req, res) => {
 router.post('/registrationTest', DataValidator.checkEmail, (req, res) => {
   if (process.env.DEV) {
     // Create new User in DB
-    UserHandler.createNewUser(req.body.password, false, req.body.email).then(
-      res.send('Success')
-    );
+    UserHandler.createNewUser(
+      req.body.password,
+      false,
+      req.body.email.toLowerCase()
+    ).then(res.send('Success'));
   } else {
     res.status(401).send('Only for Development');
   }
@@ -83,7 +89,7 @@ router.post(
   (req, res) => {
     // Upgrade Guest to User
     UserHandler.upgradeGuest(
-      req.body.email,
+      req.body.email.toLowerCase(),
       req.body.password,
       req.body.userID
     ).then((response) => {
@@ -117,7 +123,7 @@ router.post('/update', JWT.check, DataValidator.checkEmail, (req, res) => {
     req.body.password,
     req.body.newPassword,
     req.body.newSkin,
-    req.body.newEmail
+    req.body.newEmail.toLowerCase()
   ).then((response) => {
     // Respond with true or false to Frontend, depending on Success
     res.send(response);
