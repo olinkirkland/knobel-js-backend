@@ -4,7 +4,6 @@ const router = express.Router();
 const JWT = require('../controllers/JWT');
 const friendsHandler = require('../controllers/friendsHandler');
 
-//! JWT.CHECK!!!
 router.post('/request', JWT.check, (req, res) => {
   const requestGiver = req.body.requestGiver;
   const requestTarget = req.body.requestTarget;
