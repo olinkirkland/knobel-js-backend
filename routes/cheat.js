@@ -21,7 +21,7 @@ router.post(
       options = { gold: gold };
     } else if (typeof lvl !== 'undefined') {
       lvl = lvl < 0 ? lvl * -1 : lvl;
-      options = { lvl: lvl };
+      options = { level: lvl };
     }
     UserSchema.findByIdAndUpdate({ _id: id }, options).catch((err) => {
       error = err;
