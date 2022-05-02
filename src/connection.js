@@ -28,6 +28,9 @@ function connect(app) {
     // Add new User to currentlyonlines-Collection
     UserHandler.changeOnlineState(data, socket.id);
 
+    // Send FrontEnd MEssage to fetch UserData
+    socket.to(socket.id).emit('invalidate-user');
+
     socket.on('disconnect', () => {
       // Console.log Disconnect-Message & Update currentlyonlines-Collection
       console.log(socket.id, 'disconnected');
