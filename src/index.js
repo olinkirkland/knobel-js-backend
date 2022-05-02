@@ -21,7 +21,7 @@ connection.connect(app);
 app.use(
   cors({
     origin: ['http://localhost:3000', 'http://localhost:8000'],
-    credentials: true
+    credentials: true,
   })
 );
 app.use(express.json());
@@ -45,3 +45,5 @@ app.get('/info', cors({ origin: '*' }), (req, res) => {
 app.get('/errorcodes', cors({ origin: '*' }), (req, res) => {
   res.sendFile(path.join(__dirname, '../ErrorCodes.html'));
 });
+
+console.log(new Date().getHours());
