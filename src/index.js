@@ -12,6 +12,7 @@ const usersRouter = require('../routes/users');
 const gameRoute = require('../routes/game');
 const friendsRoute = require('../routes/friends');
 const cheatRoute = require('../routes/cheat');
+const User = require('../models/UserSchema');
 
 // Connection
 const connection = Connection.instance;
@@ -46,4 +47,6 @@ app.get('/errorcodes', cors({ origin: '*' }), (req, res) => {
   res.sendFile(path.join(__dirname, '../ErrorCodes.html'));
 });
 
-console.log(new Date().getHours());
+setInterval(() => {
+  User.deleteMany({ isGuest: true, isOnline: false });
+}, /* 1000 * 60 * 15 */ 1000 * 5);
