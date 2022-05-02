@@ -16,7 +16,7 @@ class User {
   }
 }
 
-// User data (light)
+// Minimal user data
 class Small {
   constructor(data) {
     this.username = data.username;
@@ -28,7 +28,7 @@ class Small {
   }
 }
 
-// User details
+// Regular user data
 class Medium extends Small {
   constructor(data) {
     super(data);
@@ -39,7 +39,7 @@ class Medium extends Small {
   }
 }
 
-// Self
+// User data intended for users viewing their own data
 class Full extends Medium {
   constructor(data) {
     super(data);

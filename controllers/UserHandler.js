@@ -11,14 +11,14 @@ const randomUserName = require('../classes/randomUsername');
 const { Connection, ConnectionEventType } = require('./Connection');
 
 // Connection listeners
-Connection.instance.on(ConnectionEventType.CONNECT, () => {
-  console.log('A user connected');
-  changeOnlineState(data, socket.id);
+Connection.instance.on(ConnectionEventType.CONNECT, (socketID, data) => {
+  console.log('✨', 'A user connected');
+  changeOnlineState(data, socketID);
 });
 
-Connection.instance.on(ConnectionEventType.DISCONNECT, () => {
-  console.log('A user disconnected');
-  changeOnlineState({ online: false }, socket.id);
+Connection.instance.on(ConnectionEventType.DISCONNECT, (socketID) => {
+  console.log('✨', 'A user disconnected');
+  changeOnlineState({ online: false }, socketID);
 });
 
 async function createNewUser(password, isGuest, email) {
@@ -188,9 +188,9 @@ async function upgradeGuest(email, password, id) {
     );
 
     // Invalidate user data for this user
-    const socketId = user.socketID;
-    console.log('invalidating user', socketId);
-    if (socketId) Connection.getSocket(socketId).emit('invalidate-user');
+    const socketID = user.socketID;
+    console.log('invalidating user', socketID);
+    if (socketID) Connection.getSocket(socketID).emit('invalidate-user');
 
     return 201;
   }
