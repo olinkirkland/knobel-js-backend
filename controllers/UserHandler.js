@@ -100,9 +100,10 @@ async function updateUser(
 ) {
   // Get all Userdata´s from users-Collection, including critical data (like Password)
   const user = await getFullUserById(id);
+  let result = '';
 
   // If no User was found, return with Error
-  if (!user) return 'Error: Wrong ID!';
+  if (!user) result = 400;
 
   if (user !== null) {
     // If User wants to change the Username, no Pasword is required
@@ -111,7 +112,6 @@ async function updateUser(
         { _id: id },
         { username: newUsername }
       );
-      return 'Success';
     }
 
     if (newPassword) {
@@ -123,16 +123,14 @@ async function updateUser(
           { _id: id },
           { password: Password.encrypt(newPassword) }
         );
-        return 'Success';
       } else {
-        return 'Wrong Password';
+        result = 401;
       }
     }
 
     if (newSkin) {
       // If User wants to change the Skin, no Pasword is required
       await UserSchema.findByIdAndUpdate({ _id: id }, { currentSkin: newSkin });
-      return 'Success';
     }
 
     if (newEmail) {
@@ -140,14 +138,24 @@ async function updateUser(
       const check = Password.check(oldPassword, user.password, user.username);
 
       if (check) {
-        await UserSchema.findByIdAndUpdate({ _id: id }, { email: newEmail });
-        return 'Success';
+        await UserSchema.findByIdAndUpdate(
+          { _id: id },
+          { email: newEmail.toLowerCase() }
+        );
       } else {
-        return 'Wrong Password';
+        result = 400;
       }
     }
+  }
+
+  if (result !== 'Wrong Password' || result !== 'Wrong ID') {
+    return getFullUserById(id);
   } else {
-    return 'Wrong ID. Please report to Admin';
+    if (result === 'Wrong Password') {
+      return 401;
+    } else {
+      return 400;
+    }
   }
 }
 

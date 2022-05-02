@@ -22,7 +22,7 @@ router.post('/login', DataValidator.checkEmail, (req, res) => {
           cookieContent.name,
           cookieContent.token,
           cookieContent.options
-        ); 
+        );
         res.send(user);
       });
     });
@@ -115,7 +115,7 @@ router.get('/delete', JWT.check, (req, res) => {
   UserHandler.deleteUser(id).then((response) => res.send(response));
 });
 
-router.post('/update', JWT.check, DataValidator.checkEmail, (req, res) => {
+router.post('/update', JWT.check, (req, res) => {
   // Update User | Must recieve ID!
   UserHandler.updateUser(
     req.body.id,
@@ -123,10 +123,16 @@ router.post('/update', JWT.check, DataValidator.checkEmail, (req, res) => {
     req.body.password,
     req.body.newPassword,
     req.body.newSkin,
-    req.body.newEmail.toLowerCase()
+    req.body.newEmail
   ).then((response) => {
     // Respond with true or false to Frontend, depending on Success
-    res.send(response);
+    if (response !== 401 || response !== 400) {
+      res.send(response);
+    } else {
+      response === 400
+        ? res.status(400).send('Invalid ID')
+        : res.status(401).send('Wrong Password');
+    }
   });
 });
 

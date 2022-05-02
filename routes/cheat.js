@@ -13,7 +13,7 @@ router.post(
     let id = req.body.userID;
     let error = '';
 
-    console.log('cheating...');
+    console.log(`Player with ID ${id} is cheating`);
 
     if (typeof xp !== 'undefined') {
       xp = xp < 0 ? xp * -1 : xp;
