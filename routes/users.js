@@ -10,7 +10,7 @@ const DataValidator = require('../controllers/DataValidator');
 const UserHandler = require('../controllers/UserHandler');
 
 router.post('/login', DataValidator.checkEmail, (req, res) => {
-  console.log('LogIn as: ', req.body);
+  console.log('Login: ', req.body);
   if (req.body.isGuest) {
     // Create new Guest with Standard PW and Email in DB
     UserHandler.createNewUser('123', true, 'GUEST@GUEST.de').then((result) => {
@@ -94,7 +94,6 @@ router.post(
       req.body.password,
       req.body.userID
     ).then((response) => {
-      console.log(response);
       if (response === 400) {
         res.status(400).send('Error: ID invalid. Please contact Support');
       } else if (response === 404) {
