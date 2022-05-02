@@ -171,7 +171,7 @@ router.post('/multi/medium', JWT.check, async (req, res) => {
   }
 });
 
-router.post('/multi/light', JWT.check, async (req, res) => {
+router.post('/multi/light', JWT.check, async (req, res) => { 
   const ids = req.body.idsArray;
 
   let usersArray = [];
