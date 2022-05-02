@@ -81,6 +81,33 @@ async function checkLevel(userID) {
   }
 }
 
+async function addExperience(userID, experience) {
+  let error = null;
+
+  await UserSchema.findByIdAndUpdate(
+    { _id: userID },
+    { experience: experience }
+  ).catch((err) => {
+    console.log('AddXP-Error: ', err);
+    error = 512;
+  });
+
+  return error !== null ? error : checkLevel(userID);
+}
+
+async function addGold(userID, gold) {
+  let error = null;
+
+  await UserSchema.findByIdAndUpdate({ _id: userID }, { gold: gold }).catch(
+    (err) => {
+      console.log('AddGold-Error: ', err);
+      error = 512;
+    }
+  );
+
+  return error !== null ? error : 201;
+}
+
 function getCategoryID(category) {
   // Get ID for Category
 
@@ -162,4 +189,10 @@ function getCategoryID(category) {
   }
 }
 
-module.exports = { getQuestions, categoriesCatalog, checkLevel };
+module.exports = {
+  addGold,
+  getQuestions,
+  categoriesCatalog,
+  checkLevel,
+  addExperience,
+};

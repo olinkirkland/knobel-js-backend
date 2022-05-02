@@ -1,5 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
-const { count } = require('../models/UserSchema');
+const Userhandler = require('../controllers/gameHandler');
 
 class Game {
   constuctor(data) {
