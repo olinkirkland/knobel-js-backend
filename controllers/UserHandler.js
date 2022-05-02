@@ -8,6 +8,18 @@ const User = require('../classes/User');
 const FriendsSchema = require('../models/FriendsSchema');
 
 const randomUserName = require('../classes/randomUsername');
+const { Connection, ConnectionEventType } = require('./Connection');
+
+// Connection listeners
+Connection.instance.on(ConnectionEventType.CONNECT, () => {
+  console.log('A user connected');
+  changeOnlineState(data, socket.id);
+});
+
+Connection.instance.on(ConnectionEventType.DISCONNECT, () => {
+  console.log('A user disconnected');
+  changeOnlineState({ online: false }, socket.id);
+});
 
 async function createNewUser(password, isGuest, email) {
   // Standart Skins for every UserSchema
@@ -34,7 +46,7 @@ async function createNewUser(password, isGuest, email) {
     friendRequestsIncoming: [],
     friendRequestsOutgoing: [],
     nameChanges: 0,
-    currentAvatar: `https://avatars.dicebear.com/api/personas/${username}.svg`,
+    currentAvatar: `https://avatars.dicebear.com/api/personas/${username}.svg`
   });
 
   await newUser.save();
@@ -73,7 +85,7 @@ async function getSmallUserById(id) {
 async function getUserBySocketID(socketID) {
   // Get Userdata from currentlyonlines-Collection
   const user = await UserSchema.findOne({
-    socketID: socketID,
+    socketID: socketID
   }).catch(() => 'Error');
 
   return user === 'Error' || user === null ? 'Error: ID invalid!' : user;
@@ -174,6 +186,11 @@ async function upgradeGuest(email, password, id) {
       { _id: id },
       { password: hashed, email: email, isGuest: false, nameChanges: 1 }
     );
+
+    // Invalidate user data for this user
+    const socketId = user.socketID;
+    if (socketId) Connection.getSocket(socketId).emit('invalidate-user');
+
     return 201;
   }
 }
@@ -236,13 +253,13 @@ async function changeSocketRoom(user, partner) {
     users: [
       {
         username: user.username,
-        userID: user.userID,
+        userID: user.userID
       },
       {
         username: partner.username,
-        userID: partner.userID,
-      },
-    ],
+        userID: partner.userID
+      }
+    ]
   })
     .save()
     .catch((err) => (error = `Error: ${err}`));
@@ -252,7 +269,7 @@ async function changeSocketRoom(user, partner) {
   userDB.friends.push({
     userID: partner.userID,
     username: partner.username,
-    friendsID: friendsID,
+    friendsID: friendsID
   });
   await UserSchema.findByIdAndUpdate(
     { _id: user.userID },
@@ -265,7 +282,7 @@ async function changeSocketRoom(user, partner) {
     .push({
       userID: user.userID,
       username: user.username,
-      friendsID: friendsID,
+      friendsID: friendsID
     })
     .catch((err) => (error = `Error: ${err}`));
 
@@ -287,5 +304,5 @@ module.exports = {
   changeOnlineState,
   updateToken,
   changeSocketRoom,
-  upgradeGuest,
+  upgradeGuest
 };
