@@ -4,7 +4,7 @@ const router = express.Router();
 const JWT = require('../controllers/JWT');
 const Game = require('../controllers/gameHandler');
 
-router.post('/', JWT.check, (req, res) => {
+router.post('/', /* JWT.check, */ (req, res) => {
   // Return an Array with Objects of Questions, depending on the choice of Options.
   // Options:
   // difficulty: easy || medium || hard
