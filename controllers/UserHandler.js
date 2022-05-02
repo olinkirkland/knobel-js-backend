@@ -187,6 +187,7 @@ async function upgradeGuest(email, password, id) {
 
     // Invalidate user data for this user
     const socketId = user.socketID;
+    console.log('invalidating user', socketId);
     if (socketId) Connection.getSocket(socketId).emit('invalidate-user');
 
     return 201;
