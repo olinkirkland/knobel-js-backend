@@ -136,16 +136,6 @@ router.post('/update', JWT.check, (req, res) => {
   });
 });
 
-router.post('/setonline', JWT.check, (req, res) => {
-  // Log User to currentlyonlines-Collection in or out.
-  // Requiers UserID & Boolean "online"
-  // Returns "Logged in" || "Logged Out"
-
-  UserHandler.changeOnlineState(req.body).then((response) =>
-    res.send(response)
-  );
-});
-
 router.get('/:id', JWT.check, (req, res) => {
   // Send a User-Model to the FrontEnd, without critical Data like Password
   UserHandler.getFullUserById(req.params.id).then((response) =>
@@ -171,7 +161,7 @@ router.post('/multi/medium', JWT.check, async (req, res) => {
   }
 });
 
-router.post('/multi/light', JWT.check, async (req, res) => { 
+router.post('/multi/light', JWT.check, async (req, res) => {
   const ids = req.body.idsArray;
 
   let usersArray = [];
