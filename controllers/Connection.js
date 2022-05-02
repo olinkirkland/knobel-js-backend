@@ -47,17 +47,14 @@ class Connection extends EventEmitter {
 
       console.log('🗃️ ', data);
 
-      socket.emit(ConnectionEventType.CONNECT, {
-        data: data,
-        socket: socket.id
-      });
+      this.emit(ConnectionEventType.CONNECT, socket.id, data);
 
       socket.on('disconnect', () => {
         // A socket disconnected
         console.log('💀', 'Socket disconnected:', socket.id);
         if (Connection.sockets[socket.id]) delete Connection.sockets[socket.id];
 
-        socket.emit(ConnectionEventType.DISCONNECT, socket.id);
+        this.emit(ConnectionEventType.DISCONNECT, socket.id);
       });
 
       socket.on('chat', (data) => {
