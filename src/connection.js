@@ -25,6 +25,8 @@ function connect(app) {
       username: socket.request['_query'].username,
     };
 
+    console.log('socket data', data);
+
     // Add new User to currentlyonlines-Collection
     UserHandler.changeOnlineState(data, socket.id);
 
