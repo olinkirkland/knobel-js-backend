@@ -12,12 +12,10 @@ const { Connection, ConnectionEventType } = require('./Connection');
 
 // Connection listeners
 Connection.instance.on(ConnectionEventType.CONNECT, (socketID, data) => {
-  console.log('✨', 'A user connected');
   changeOnlineState(data, socketID);
 });
 
 Connection.instance.on(ConnectionEventType.DISCONNECT, (socketID) => {
-  console.log('✨', 'A user disconnected');
   changeOnlineState({ online: false }, socketID);
 });
 
@@ -46,7 +44,7 @@ async function createNewUser(password, isGuest, email) {
     friendRequestsIncoming: [],
     friendRequestsOutgoing: [],
     nameChanges: 0,
-    currentAvatar: `https://avatars.dicebear.com/api/personas/${username}.svg`,
+    currentAvatar: `https://avatars.dicebear.com/api/personas/${username}.svg`
   });
 
   await newUser.save();
@@ -83,7 +81,7 @@ async function getSmallUserById(id) {
 async function getUserBySocketID(socketID) {
   // Get Userdata from currentlyonlines-Collection
   const user = await UserSchema.findOne({
-    socketID: socketID,
+    socketID: socketID
   }).catch(() => 'Error');
 
   return user === 'Error' || user === null ? 'Error: ID invalid!' : user;
@@ -187,8 +185,10 @@ async function upgradeGuest(email, password, id) {
 
     // Invalidate user data for this user
     const socketID = user.socketID;
-    console.log('invalidating user', socketID);
+    // console.log('invalidating user', socketID);
     if (socketID) Connection.getSocket(socketID).emit('invalidate-user');
+
+    console.log('✔️', user.username, 'registered their account with email', email);
 
     return 201;
   }
@@ -252,13 +252,13 @@ async function changeSocketRoom(user, partner) {
     users: [
       {
         username: user.username,
-        userID: user.userID,
+        userID: user.userID
       },
       {
         username: partner.username,
-        userID: partner.userID,
-      },
-    ],
+        userID: partner.userID
+      }
+    ]
   })
     .save()
     .catch((err) => (error = `Error: ${err}`));
@@ -268,7 +268,7 @@ async function changeSocketRoom(user, partner) {
   userDB.friends.push({
     userID: partner.userID,
     username: partner.username,
-    friendsID: friendsID,
+    friendsID: friendsID
   });
   await UserSchema.findByIdAndUpdate(
     { _id: user.userID },
@@ -281,7 +281,7 @@ async function changeSocketRoom(user, partner) {
     .push({
       userID: user.userID,
       username: user.username,
-      friendsID: friendsID,
+      friendsID: friendsID
     })
     .catch((err) => (error = `Error: ${err}`));
 
@@ -303,5 +303,5 @@ module.exports = {
   changeOnlineState,
   updateToken,
   changeSocketRoom,
-  upgradeGuest,
+  upgradeGuest
 };

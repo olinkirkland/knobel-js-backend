@@ -10,7 +10,7 @@ const DataValidator = require('../controllers/DataValidator');
 const UserHandler = require('../controllers/UserHandler');
 
 router.post('/login', DataValidator.checkEmail, (req, res) => {
-  console.log('Login: ', req.body);
+  console.log('👤', req.body);
   if (req.body.isGuest) {
     // Create new Guest with Standard PW and Email in DB
     UserHandler.createNewUser('123', true, 'GUEST@GUEST.de').then((result) => {
