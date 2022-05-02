@@ -146,10 +146,15 @@ router.post('/setonline', JWT.check, (req, res) => {
   );
 });
 
-router.get('/:id', JWT.check, (req, res) => {
-  // Send a User-Model to the FrontEnd, without critical Data like Password
-  UserHandler.getUserById(req.params.id).then((response) => res.send(response));
-});
+router.get(
+  '/:id',
+  /* JWT.check, */ (req, res) => {
+    // Send a User-Model to the FrontEnd, without critical Data like Password
+    UserHandler.getFullUserById(req.params.id).then((response) =>
+      res.send(response)
+    );
+  }
+);
 
 router.post('/multi/medium', JWT.check, async (req, res) => {
   const ids = req.body.idsArray;

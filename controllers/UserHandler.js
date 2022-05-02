@@ -46,7 +46,7 @@ async function createNewUser(password, isGuest, email) {
     friendRequestsIncoming: [],
     friendRequestsOutgoing: [],
     nameChanges: 0,
-    currentAvatar: `https://avatars.dicebear.com/api/personas/${username}.svg`
+    currentAvatar: `https://avatars.dicebear.com/api/personas/${username}.svg`,
   });
 
   await newUser.save();
@@ -59,9 +59,7 @@ async function getFullUserById(id) {
   // Get Userdata from users-Collection without critical data, like Password
 
   const user = await UserSchema.findById(id).catch(() => 'Error');
-  return user === 'Error' || user === null
-    ? 'Error: ID invalid!'
-    : new User.Full(user);
+  return user === 'Error' || user === null ? 'Error: ID invalid!' : user;
 }
 
 async function getMediumUserById(id) {
@@ -85,7 +83,7 @@ async function getSmallUserById(id) {
 async function getUserBySocketID(socketID) {
   // Get Userdata from currentlyonlines-Collection
   const user = await UserSchema.findOne({
-    socketID: socketID
+    socketID: socketID,
   }).catch(() => 'Error');
 
   return user === 'Error' || user === null ? 'Error: ID invalid!' : user;
@@ -253,13 +251,13 @@ async function changeSocketRoom(user, partner) {
     users: [
       {
         username: user.username,
-        userID: user.userID
+        userID: user.userID,
       },
       {
         username: partner.username,
-        userID: partner.userID
-      }
-    ]
+        userID: partner.userID,
+      },
+    ],
   })
     .save()
     .catch((err) => (error = `Error: ${err}`));
@@ -269,7 +267,7 @@ async function changeSocketRoom(user, partner) {
   userDB.friends.push({
     userID: partner.userID,
     username: partner.username,
-    friendsID: friendsID
+    friendsID: friendsID,
   });
   await UserSchema.findByIdAndUpdate(
     { _id: user.userID },
@@ -282,7 +280,7 @@ async function changeSocketRoom(user, partner) {
     .push({
       userID: user.userID,
       username: user.username,
-      friendsID: friendsID
+      friendsID: friendsID,
     })
     .catch((err) => (error = `Error: ${err}`));
 
@@ -304,5 +302,5 @@ module.exports = {
   changeOnlineState,
   updateToken,
   changeSocketRoom,
-  upgradeGuest
+  upgradeGuest,
 };
