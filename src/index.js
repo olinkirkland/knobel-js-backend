@@ -49,4 +49,4 @@ app.get('/errorcodes', cors({ origin: '*' }), (req, res) => {
 
 setInterval(() => {
   User.deleteMany({ isGuest: true, isOnline: false });
-}, /* 1000 * 60 * 15 */ 1000 * 5);
+}, 1000 * 60 * 15);
