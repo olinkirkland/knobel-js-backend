@@ -47,6 +47,7 @@ app.get('/errorcodes', cors({ origin: '*' }), (req, res) => {
   res.sendFile(path.join(__dirname, '../ErrorCodes.html'));
 });
 
+// Delete Guests every 15 min, if they are offline
 setInterval(() => {
   User.deleteMany({ isGuest: true, isOnline: false });
 }, 1000 * 60 * 15);
