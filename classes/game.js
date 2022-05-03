@@ -14,7 +14,7 @@ class Game {
     this.gameCategory = options.category;
     this.gameDifficulty = options.difficulty;
     this.gameRounds = options.rounds;
-    this.currentRound = 0;
+    this.currentRound = 0; 
   }
 
   startCountdown() {
