@@ -63,7 +63,6 @@ class Connection extends EventEmitter {
       });
 
       socket.on('chat', (message) => {
-        console.log('📩', message);
         // Get the user by socketId
         UserSchema.findOne({
           socketID: socket.id
@@ -72,9 +71,10 @@ class Connection extends EventEmitter {
           .then((user) => {
             // Broadcast the message, date, and user (small) to the general-chat room
             const userSm = new User.Small(user);
+            console.log('📩', userSm.username, message);
             io.to('general-chat').emit('chat', {
               message: message,
-              date: new Date().getTime(),
+              time: new Date().getTime(),
               user: userSm
             });
           });
