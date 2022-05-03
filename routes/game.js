@@ -27,8 +27,11 @@ router.get('/categories', JWT.check, (req, res) => {
 });
 
 router.post('/host', JWT.check, async (req, res) => {
+  const hostID = JWT.getSensibleDataFromFcknToken(req.signedCookies.Token);
   const options = req.body.options;
-  options.players = [await UserHandler.getSmallUserById(options.hostID)];
+  // options.players = [await UserHandler.getSmallUserById(options.hostID)];
+
+  console.log('ID', req.signedCookies);
 
   if (currentGames.find((el) => el.name === options.name)?.name) {
     res.status(400).send('Name is unavaible');

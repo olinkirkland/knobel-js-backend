@@ -35,10 +35,12 @@ function check(req, res, next) {
   // Extract Token from Request-Cookie
   const token = req.signedCookies.Token;
 
-  if (process.env.DEV) {
-    next();
-    return;
-  }
+  console.log('BHUIOIFPÜOJÖADSNGFV', token);
+
+  // if (process.env.DEV) {
+  //   next();
+  //   return;
+  // }
 
   return jwt.verify(
     token,
@@ -74,4 +76,8 @@ function check(req, res, next) {
   );
 }
 
-module.exports = { generate, check };
+function getSensibleDataFromFcknToken(token) {
+  console.log(token);
+}
+
+module.exports = { generate, check, getSensibleDataFromFcknToken };

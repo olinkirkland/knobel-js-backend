@@ -53,7 +53,7 @@ function connect(app) {
       // UserHandler.changeSocketRoom(socket.request['_query'], socket.id);
       console.log(`user joind GameRoom ${room}`);
       socket.join(room);
-      game.joinGame(socket.id, room);
+      // game.joinGame(socket.id, room);
     });
 
     socket.on('join-room', (room) => {
