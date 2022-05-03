@@ -13,7 +13,7 @@ function connect(app) {
   const httpServer = http.createServer(app);
 
   const io = require('socket.io')(httpServer, {
-    cors: { origin: '*', methods: ['GET', 'POST'] }
+    cors: { origin: '*', methods: ['GET', 'POST'] },
   });
 
   io.on('connection', (socket) => {
@@ -22,7 +22,7 @@ function connect(app) {
     const data = {
       userID: socket.request['_query'].userID,
       online: true,
-      username: socket.request['_query'].username
+      username: socket.request['_query'].username,
     };
 
     // Add new User to currentlyonlines-Collection
@@ -34,9 +34,13 @@ function connect(app) {
       UserController.changeOnlineState({ online: false }, socket.id);
     });
 
-    socket.on('chat', (data) => {
-      // Broadcast Message to all Users, except the sending User
-      socket.broadcast.emit('chat', data);
+    socket.on('chat', (data, room) => {
+      if (room !== 'undefined' || room !== null || room !== '') {
+        socket.to(room).emit(chat);
+      } else {
+        // Broadcast Message to all Users, except the sending User
+        socket.broadcast.emit('chat', data);
+      }
     });
 
     socket.on('join-room', (room) => {
