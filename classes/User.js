@@ -25,6 +25,7 @@ class Small {
     this.experience = data.experience;
     this.level = data.level;
     this.isGuest = data.isGuest;
+    this.socketID = data.socketID;
   }
 }
 
@@ -52,7 +53,6 @@ class Full extends Medium {
     this.currentAvatar = data.currentAvatar;
     this.avaibleAvatars = data.avaibleAvatars;
     this.nameChanges = data.nameChanges;
-    this.socketID = data.socketID;
   }
 }
 

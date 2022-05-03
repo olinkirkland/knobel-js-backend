@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 
-const { v4: uuidv4 } = require('uuid');
 const JWT = require('../controllers/JWT');
 const gameHandler = require('../controllers/gameHandler');
 const Game = require('../classes/Game');
+const UserHandler = require('../controllers/UserHandler');
 
 const currentGames = [];
 
@@ -25,8 +25,9 @@ router.get('/categories', JWT.check, (req, res) => {
   res.send(gameHandler.categoriesCatalog());
 });
 
-router.post('/host', JWT.check, (req, res) => {
+router.post('/host', JWT.check, async (req, res) => {
   const options = req.body.options;
+  options.players = [await UserHandler.getSmallUserById(options.hostID)];
 
   if (currentGames.find((el) => el.name === options.name)?.name) {
     res.status(400).send('Name is unavaible');
