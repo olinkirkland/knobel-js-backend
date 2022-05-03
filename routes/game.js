@@ -3,7 +3,10 @@ const router = express.Router();
 
 const { v4: uuidv4 } = require('uuid');
 const JWT = require('../controllers/JWT');
-const Game = require('../controllers/gameHandler');
+const gameHandler = require('../controllers/gameHandler');
+const Game = require('../classes/Game');
+
+const currentGames = [];
 
 router.post(
   '/',
@@ -16,7 +19,7 @@ router.post(
     // category: One of all Categories as String (Request /categories to see Options)
 
     const options = req.body;
-    Game.getQuestions(options).then((response) => res.send(response));
+    gameHandler.getQuestions(options).then((response) => res.send(response));
   }
 );
 
@@ -24,14 +27,23 @@ router.get(
   '/categories',
   /* JWT.check, */ (req, res) => {
     // Return avaible Categories for Questions as an Array
-    res.send(Game.categoriesCatalog());
+    res.send(gameHandler.categoriesCatalog());
   }
 );
 
-router.get(
+router.post(
   '/host',
   /* JWT.check, */ (req, res) => {
-    res.send({ roomID: uuidv4() });
+    const options = req.body.options;
+
+    if (currentGames.find((el) => el.name === options.name)?.name) {
+      res.status(400).send('Name is unavaible');
+    } else {
+      const newGame = new Game(options);
+      currentGames.push(newGame);
+
+      res.status(201).send(currentGames);
+    }
   }
 );
 

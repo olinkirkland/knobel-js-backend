@@ -2,6 +2,7 @@ const axios = require('axios');
 
 const UserHandler = require('./UserHandler');
 const UserSchema = require('../models/UserSchema');
+const Game = require('../classes/Game');
 
 async function getQuestions(options) {
   // Extract Options
@@ -55,57 +56,6 @@ function categoriesCatalog() {
     'Anime & Manga',
     'Cartoon & Animations',
   ];
-}
-
-async function checkLevel(userID) {
-  let user = await UserHandler.getFullUserById(userID);
-  let requiredXP = 100 + ((user.level / 7) ^ 2);
-  let lvlUp = true;
-
-  if (user.experience >= requiredXP) {
-    do {
-      user.level++;
-      user.experience = user.experience - requiredXP;
-      requiredXP = (100 + user.level / 7) ^ 2;
-      lvlUp = user.experience >= requiredXP ? true : false;
-    } while (lvlUp);
-
-    UserSchema.findByIdAndUpdate(
-      { _id: userID },
-      { level: user.level, experience: user.experience }
-    ).catch((err) => console.log(err));
-
-    return 228;
-  } else {
-    return 227;
-  }
-}
-
-async function addExperience(userID, experience) {
-  let error = null;
-
-  await UserSchema.findByIdAndUpdate(
-    { _id: userID },
-    { experience: experience }
-  ).catch((err) => {
-    console.log('AddXP-Error: ', err);
-    error = 512;
-  });
-
-  return error !== null ? error : checkLevel(userID);
-}
-
-async function addGold(userID, gold) {
-  let error = null;
-
-  await UserSchema.findByIdAndUpdate({ _id: userID }, { gold: gold }).catch(
-    (err) => {
-      console.log('AddGold-Error: ', err);
-      error = 512;
-    }
-  );
-
-  return error !== null ? error : 201;
 }
 
 function getCategoryID(category) {
@@ -189,10 +139,11 @@ function getCategoryID(category) {
   }
 }
 
+async function newGame(options) {
+  const Game = new Game(options);
+}
+
 module.exports = {
-  addGold,
   getQuestions,
   categoriesCatalog,
-  checkLevel,
-  addExperience,
 };

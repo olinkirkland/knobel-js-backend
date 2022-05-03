@@ -52,6 +52,7 @@ class Full extends Medium {
     this.currentAvatar = data.currentAvatar;
     this.avaibleAvatars = data.avaibleAvatars;
     this.nameChanges = data.nameChanges;
+    this.socketID = data.socketID;
   }
 }
 

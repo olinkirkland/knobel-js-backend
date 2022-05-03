@@ -32,7 +32,7 @@ class Connection extends EventEmitter {
 
   startSocketServer() {
     const io = require('socket.io')(this.httpServer, {
-      cors: { origin: '*', methods: ['GET', 'POST'] }
+      cors: { origin: '*', methods: ['GET', 'POST'] },
     });
 
     io.on('connection', (socket) => {
@@ -42,7 +42,7 @@ class Connection extends EventEmitter {
 
       const data = {
         userID: socket.request['_query'].userID,
-        online: true
+        online: true,
       };
 
       console.log('🗃️ ', data);
@@ -57,9 +57,18 @@ class Connection extends EventEmitter {
         this.emit(ConnectionEventType.DISCONNECT, socket.id);
       });
 
+      // socket.on('chat', (data) => {
+      //   // Broadcast Message to all Users, except the sending User
+      //   socket.broadcast.emit('chat', data);
+      // });
+
       socket.on('chat', (data) => {
-        // Broadcast Message to all Users, except the sending User
-        socket.broadcast.emit('chat', data);
+        if (!(data.room == '')) {
+          socket.to(data.room).emit('chat', data);
+        } else {
+          // Broadcast Message to all Users, except the sending User
+          socket.broadcast.emit('chat', data);
+        }
       });
 
       socket.on('join-room', (room) => {
@@ -94,5 +103,5 @@ class Connection extends EventEmitter {
 
 module.exports = {
   Connection,
-  ConnectionEventType
+  ConnectionEventType,
 };

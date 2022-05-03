@@ -57,7 +57,9 @@ async function getFullUserById(id) {
   // Get Userdata from users-Collection without critical data, like Password
 
   const user = await UserSchema.findById(id).catch(() => 'Error');
-  return user === 'Error' || user === null ? 'Error: ID invalid!' : user;
+  return user === 'Error' || user === null
+    ? 'Error: ID invalid!'
+    : new User.Full(user);
 }
 
 async function getMediumUserById(id) {
