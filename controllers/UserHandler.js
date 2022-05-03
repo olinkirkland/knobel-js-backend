@@ -305,6 +305,7 @@ module.exports = {
   getMediumUserById,
   getSmallUserById,
   getUserByMail,
+  getUserBySocketID,
   deleteUser,
   updateUser,
   changeOnlineState,

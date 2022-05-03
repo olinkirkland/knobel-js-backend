@@ -5,6 +5,8 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 
 const UserController = require('../controllers/UserController');
+const gameHandler = require('../controllers/gameHandler');
+const gmaeRoute = require('../routes/game');
 
 const port = process.env.PORT || 5000;
 const dbURI = `mongodb+srv://admin:${process.env.MONGO_PW}@cluster0.s1t7x.mongodb.net/test1?retryWrites=true&w=majority`;
@@ -41,6 +43,17 @@ function connect(app) {
         // Broadcast Message to all Users, except the sending User
         socket.broadcast.emit('chat', data);
       }
+    });
+
+    socket.on('game-room', (data, room) => {
+      socket.to(room).emit(chat);
+    });
+
+    socket.on('join-game-room', (room) => {
+      // UserHandler.changeSocketRoom(socket.request['_query'], socket.id);
+      console.log(`user joind GameRoom ${room}`);
+      socket.join(room);
+      game.joinGame(socket.id, room);
     });
 
     socket.on('join-room', (room) => {
