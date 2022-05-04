@@ -28,7 +28,7 @@ router.get('/categories', JWT.check, (req, res) => {
 
 router.post('/host', JWT.check, async (req, res) => {
   const options = req.body.options;
-  options.players = [await UserHandler.getSmallUserById(options.hostID)];
+  options.players = [await UserHandler.getFullUserById(options.hostID)];
 
   if (currentGames.find((el) => el.name === options.name)?.name) {
     res.status(400).send('Name is unavaible');
@@ -50,4 +50,5 @@ async function joinGame(socketID, roomID) {
   currentGames.find((el) => el.roomID === roomID)?.players.push(user);
 }
 
+//! vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 (module.exports = router), joinGame;
