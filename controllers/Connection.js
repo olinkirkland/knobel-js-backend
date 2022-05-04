@@ -4,7 +4,6 @@ const dotenv = require('dotenv').config();
 const EventEmitter = require('events');
 const User = require('../classes/User');
 const UserSchema = require('../models/UserSchema');
-// const game = require('../routes/game');
 
 const PORT = process.env.PORT || 5000;
 const DATABASE_URL = `mongodb+srv://admin:${process.env.MONGO_PW}@cluster0.s1t7x.mongodb.net/test1?retryWrites=true&w=majority`;
@@ -16,6 +15,8 @@ class ConnectionEventType {
 
 class GameEventType {
   static JOIN = 'game-join'; // Player joined game
+  static START = 'start-game'; // Host starts the Game
+  static ANSWER = 'answer-game'; // User clicks on Answer
 }
 
 class Connection extends EventEmitter {
@@ -73,6 +74,26 @@ class Connection extends EventEmitter {
         this.emit(GameEventType.JOIN, socket.id, data);
       });
 
+      //! xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+      //* Game Cycle Start
+
+      socket.on('game-start', () => {
+        // Host starts Game
+        console.log('🎮', `Host ${socket.id} starts game`);
+        this.emit(GameEventType.START, socket.id);
+      });
+
+      socket.on('game-answers', () => {
+        const answer = socket.request['_query'].answer;
+        // Player clicks Answer
+
+        console.log('🎮', `Player ${socket.id} choose Answer ${answer}`);
+        this.emit(GameEventType.ANSWER, socket.id, answer);
+      });
+
+      //* Game Cycle End
+      //! xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
       socket.on('chat', (message) => {
         // Get the user by socketId
         UserSchema.findOne({
@@ -90,14 +111,6 @@ class Connection extends EventEmitter {
             });
           });
       });
-
-      // socket.on('join-game-room', (room) => {
-      //   console.log('GAAME');
-      //   // UserHandler.changeSocketRoom(socket.request['_query'], socket.id);
-      //   console.log(socket.id, 'joined Game', room);
-      //   game.joinGame(socket.id, room);
-      //   socket.join(room);
-      // });
 
       socket.on('join-room', (room) => {
         console.log('hey');
@@ -123,8 +136,7 @@ class Connection extends EventEmitter {
   }
 
   static get instance() {
-    if (!this._instance) 
-      this._instance = new Connection();
+    if (!this._instance) this._instance = new Connection();
     return this._instance;
   }
 }

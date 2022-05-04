@@ -17,9 +17,12 @@ class Game {
     this.gameDifficulty = options.difficulty;
     this.gameRounds = options.rounds;
     this.currentRound = 0;
+    this.question;
 
     this.addConnectionListeners();
     // removeConnectionListeners();
+    this.addStartGameListener(); //! xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    this.addAnswersGameListener(); //! xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   }
 
   addConnectionListeners() {
@@ -31,10 +34,30 @@ class Game {
     Connection.instance.removeEventListener(GameEventType.JOIN, onGameJoin);
   }
 
+  //! xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  addStartGameListener() {
+    Connection.instance.addEventListener(Connection.GameEventType.START, () => {
+      this.startCountdown();
+      setTimeout(() => {}, 1000 * 60 * 15);
+    });
+  }
+
+  addAnswersGameListener() {
+    Connection.instance.addEventListener(
+      Connection.GameEventType.ANSWER,
+      () => {
+        this.players
+          .find((el) => el.socketID === socketID)
+          .answers.push(answer);
+      }
+    );
+  }
+  //! xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
   async onGameJoin(socketID, data) {
     console.log('Game-Join: ', socketID, data);
 
-    const user = new User.Small(await UserHandler.getUserBySocketID(socketID));
+    const user = new User.Small(await Userhandler.getUserBySocketID(socketID));
     // currentGames.find((el) => el.roomID === roomID)?.players.push(user);
     this.players.push(user);
   }
@@ -45,7 +68,7 @@ class Game {
       if (counter !== 'START') counter--;
       if (counter === 0) {
         counter = 'START';
-        return counter;
+        return getQuestions();
       }
       if (counter === 'START') {
         clearInterval(interval);
@@ -70,15 +93,16 @@ class Game {
       }`;
 
       // Fetch Questions
+      this.question = (await axios.get(url)).data.results;
 
-      return (await axios.get(url)).data.results;
+      return this.question;
     } else {
       return;
     }
   }
 
   async checkLevel(userID) {
-    let user = await UserHandler.getFullUserById(userID);
+    let user = await Userhandler.getFullUserById(userID);
     let requiredXP = 100 + ((user.level / 7) ^ 2);
     let lvlUp = true;
 
