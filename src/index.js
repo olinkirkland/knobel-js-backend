@@ -6,6 +6,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const app = express();
+const AvatarSchema = require('../models/AvatarSchema');
 
 // Routes
 const usersRouter = require('../routes/users');
@@ -51,3 +52,8 @@ app.get('/errorcodes', cors({ origin: '*' }), (req, res) => {
 setInterval(() => {
   User.deleteMany({ isGuest: true, isOnline: false });
 }, 1000 * 60 * 15);
+
+app.get('/avatars', cors({ origin: '*' }), async (req, res) => {
+  const query = await AvatarSchema.find();
+  res.send(query);
+});
