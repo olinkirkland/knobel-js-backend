@@ -4,6 +4,7 @@ const dotenv = require('dotenv').config();
 const EventEmitter = require('events');
 const User = require('../classes/User');
 const UserSchema = require('../models/UserSchema');
+// const game = require('../routes/game');
 
 const PORT = process.env.PORT || 5000;
 const DATABASE_URL = `mongodb+srv://admin:${process.env.MONGO_PW}@cluster0.s1t7x.mongodb.net/test1?retryWrites=true&w=majority`;
@@ -11,6 +12,10 @@ const DATABASE_URL = `mongodb+srv://admin:${process.env.MONGO_PW}@cluster0.s1t7x
 class ConnectionEventType {
   static CONNECT = 'socket-connect'; // Socket connected
   static DISCONNECT = 'socket-disconnect'; // Socket disconnected
+}
+
+class GameEventType {
+  static JOIN = 'game-join'; // Player joined game
 }
 
 class Connection extends EventEmitter {
@@ -34,7 +39,7 @@ class Connection extends EventEmitter {
 
   startSocketServer() {
     const io = require('socket.io')(this.httpServer, {
-      cors: { origin: '*', methods: ['GET', 'POST'] }
+      cors: { origin: '*', methods: ['GET', 'POST'] },
     });
 
     io.on('connection', (socket) => {
@@ -47,7 +52,7 @@ class Connection extends EventEmitter {
 
       const data = {
         userID: socket.request['_query'].userID,
-        online: true
+        online: true,
       };
 
       console.log('🗃️ ', data);
@@ -62,10 +67,16 @@ class Connection extends EventEmitter {
         this.emit(ConnectionEventType.DISCONNECT, socket.id);
       });
 
+      socket.on('join-game-room', (data) => {
+        // A player joined a game
+        console.log('🎮', 'Player joined game:', data);
+        this.emit(GameEventType.JOIN, socket.id, data);
+      });
+
       socket.on('chat', (message) => {
         // Get the user by socketId
         UserSchema.findOne({
-          socketID: socket.id
+          socketID: socket.id,
         })
           .catch(() => 'Error')
           .then((user) => {
@@ -75,12 +86,21 @@ class Connection extends EventEmitter {
             io.to('general-chat').emit('chat', {
               message: message,
               time: new Date().getTime(),
-              user: userSm
+              user: userSm,
             });
           });
       });
 
+      // socket.on('join-game-room', (room) => {
+      //   console.log('GAAME');
+      //   // UserHandler.changeSocketRoom(socket.request['_query'], socket.id);
+      //   console.log(socket.id, 'joined Game', room);
+      //   game.joinGame(socket.id, room);
+      //   socket.join(room);
+      // });
+
       socket.on('join-room', (room) => {
+        console.log('hey');
         // UserHandler.changeSocketRoom(socket.request['_query'], socket.id);
         console.log(socket.id, 'joined', room);
         socket.join(room);
@@ -103,14 +123,14 @@ class Connection extends EventEmitter {
   }
 
   static get instance() {
-    if (!this._instance) {
+    if (!this._instance) 
       this._instance = new Connection();
-    }
     return this._instance;
   }
 }
 
 module.exports = {
   Connection,
-  ConnectionEventType
+  ConnectionEventType,
+  GameEventType,
 };

@@ -61,4 +61,4 @@ async function joinGame(socketID, roomID) {
 }
 
 //! vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-(module.exports = router), joinGame;
+module.exports = { router, currentGames };
