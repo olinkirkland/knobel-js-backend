@@ -35,10 +35,10 @@ function check(req, res, next) {
   // Extract Token from Request-Cookie
   const token = req.signedCookies.Token;
 
-  // if (process.env.DEV) {
-  //   next();
-  //   return;
-  // }
+  if (process.env.DEV) {
+    next();
+    return;
+  }
 
   return jwt.verify(
     token,
