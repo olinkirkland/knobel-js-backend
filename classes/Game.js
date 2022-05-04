@@ -1,6 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
-const Userhandler = require('../controllers/gameHandler');
 const { Connection, GameEventType } = require('../controllers/Connection');
+const UserHandler = require('../controllers/UserHandler');
 const User = require('../classes/User');
 
 class Game {
@@ -20,24 +20,29 @@ class Game {
     this.question;
 
     this.addConnectionListeners();
+
+    console.log('✔️', 'Game', `'${this.name}'`, 'was created successfully');
   }
 
   addConnectionListeners() {
     const connection = Connection.instance;
-    connection.on(GameEventType.JOIN, this.onGameJoin);
-    connection.on(GameEventType.START, this.onGameStart);
-    connection.on(GameEventType.ANSWER, this.onGameAnswer);
+    connection.on(GameEventType.JOIN, this.onGameJoin.bind(this));
+    connection.on(GameEventType.START, this.onGameStart.bind(this));
+    connection.on(GameEventType.ANSWER, this.onGameAnswer.bind(this));
   }
 
   async onGameJoin(socketID, data) {
-    const user = new User.Small(await Userhandler.getUserBySocketID(socketID));
+    const user = new User.Small(await UserHandler.getUserBySocketID(socketID));
 
-    console.log('🎮', 'User', user.username, 'joined game', `'${this.name}'`);
+    console.log('🎮', user.username, 'joined game', `'${this.roomID}'`);
     this.players.push(user);
+
+    // Tell the user they joined the game
+    Connection.sockets[socketID].emit('game-join-success', data);
   }
 
   async onGameStart(socketID, data) {
-    const user = new User.Small(await Userhandler.getUserBySocketID(socketID));
+    const user = new User.Small(await UserHandler.getUserBySocketID(socketID));
 
     // Only the host can start the game
     if (user.id !== this.hostID) return;
@@ -48,7 +53,7 @@ class Game {
   }
 
   async onGameAnswer(socketID, data) {
-    const user = new User.Small(await Userhandler.getUserBySocketID(socketID));
+    const user = new User.Small(await UserHandler.getUserBySocketID(socketID));
 
     console.log('🎮', 'User', user.username, 'answered');
     console.log(JSON.stringify(data));
@@ -96,7 +101,7 @@ class Game {
   }
 
   async checkLevel(userID) {
-    let user = await Userhandler.getFullUserById(userID);
+    let user = await UserHandler.getFullUserById(userID);
     let requiredXP = 100 + ((user.level / 7) ^ 2);
     let lvlUp = true;
 
