@@ -35,8 +35,6 @@ function check(req, res, next) {
   // Extract Token from Request-Cookie
   const token = req.signedCookies.Token;
 
-  console.log('BHUIOIFPÜOJÖADSNGFV', token);
-
   // if (process.env.DEV) {
   //   next();
   //   return;
@@ -76,8 +74,4 @@ function check(req, res, next) {
   );
 }
 
-function getSensibleDataFromFcknToken(token) {
-  console.log(token);
-}
-
-module.exports = { generate, check, getSensibleDataFromFcknToken };
+module.exports = { generate, check };
