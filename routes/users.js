@@ -123,7 +123,8 @@ router.post('/update', JWT.check, (req, res) => {
     req.body.password,
     req.body.newPassword,
     req.body.newSkin,
-    req.body.newEmail
+    req.body.newEmail,
+    req.body.newAvatar
   ).then((response) => {
     // Respond with true or false to Frontend, depending on Success
     if (response !== 401 || response !== 400) {

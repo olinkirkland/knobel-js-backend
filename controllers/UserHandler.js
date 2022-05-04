@@ -106,7 +106,8 @@ async function updateUser(
   oldPassword,
   newPassword,
   newSkin,
-  newEmail
+  newEmail,
+  newAvatar
 ) {
   // Get all Userdata´s from users-Collection, including critical data (like Password)
   const user = await getFullUserById(id);
@@ -141,6 +142,13 @@ async function updateUser(
     if (newSkin) {
       // If User wants to change the Skin, no Pasword is required
       await UserSchema.findByIdAndUpdate({ _id: id }, { currentSkin: newSkin });
+    }
+
+    if (newAvatar) {
+      await UserSchema.findByIdAndUpdate(
+        { _id: id },
+        { currentAvatar: newAvatar }
+      );
     }
 
     if (newEmail) {
