@@ -1,6 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
 const Userhandler = require('../controllers/gameHandler');
-const Connection = require('../controllers/Connection');
+const { Connection, GameEventType } = require('../controllers/Connection');
 const User = require('../classes/User');
 
 class Game {
@@ -20,46 +20,40 @@ class Game {
     this.question;
 
     this.addConnectionListeners();
-    // removeConnectionListeners();
-    this.addStartGameListener(); //! xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    this.addAnswersGameListener(); //! xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   }
 
   addConnectionListeners() {
-    console.log('instance of Connection', Connection.instance);
-    Connection.instance.addEventListener(GameEventType.JOIN, onGameJoin);
+    const connection = Connection.instance;
+    connection.on(GameEventType.JOIN, this.onGameJoin);
+    connection.on(GameEventType.START, this.onGameStart);
+    connection.on(GameEventType.ANSWER, this.onGameAnswer);
   }
-
-  removeConnectionListeners() {
-    Connection.instance.removeEventListener(GameEventType.JOIN, onGameJoin);
-  }
-
-  //! xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-  addStartGameListener() {
-    Connection.instance.addEventListener(Connection.GameEventType.START, () => {
-      this.startCountdown();
-      setTimeout(() => {}, 1000 * 60 * 15);
-    });
-  }
-
-  addAnswersGameListener() {
-    Connection.instance.addEventListener(
-      Connection.GameEventType.ANSWER,
-      () => {
-        this.players
-          .find((el) => el.socketID === socketID)
-          .answers.push(answer);
-      }
-    );
-  }
-  //! xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
   async onGameJoin(socketID, data) {
-    console.log('Game-Join: ', socketID, data);
-
     const user = new User.Small(await Userhandler.getUserBySocketID(socketID));
-    // currentGames.find((el) => el.roomID === roomID)?.players.push(user);
+
+    console.log('🎮', 'User', user.username, 'joined game', `'${this.name}'`);
     this.players.push(user);
+  }
+
+  async onGameStart(socketID, data) {
+    const user = new User.Small(await Userhandler.getUserBySocketID(socketID));
+
+    // Only the host can start the game
+    if (user.id !== this.hostID) return;
+
+    console.log('🎮', 'Game', `'${this.name}'`, 'started');
+    this.startCountdown();
+    setTimeout(() => {}, 1000 * 60 * 15);
+  }
+
+  async onGameAnswer(socketID, data) {
+    const user = new User.Small(await Userhandler.getUserBySocketID(socketID));
+
+    console.log('🎮', 'User', user.username, 'answered');
+    console.log(JSON.stringify(data));
+
+    this.players.find((el) => el.socketID === socketID).answers.push(answer);
   }
 
   startCountdown() {

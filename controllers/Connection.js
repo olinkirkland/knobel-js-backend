@@ -15,8 +15,8 @@ class ConnectionEventType {
 
 class GameEventType {
   static JOIN = 'game-join'; // Player joined game
-  static START = 'start-game'; // Host starts the Game
-  static ANSWER = 'answer-game'; // User clicks on Answer
+  static START = 'game-start'; // Host starts the Game
+  static ANSWER = 'game-answer'; // User clicks on Answer
 }
 
 class Connection extends EventEmitter {
@@ -40,7 +40,7 @@ class Connection extends EventEmitter {
 
   startSocketServer() {
     const io = require('socket.io')(this.httpServer, {
-      cors: { origin: '*', methods: ['GET', 'POST'] },
+      cors: { origin: '*', methods: ['GET', 'POST'] }
     });
 
     io.on('connection', (socket) => {
@@ -53,51 +53,38 @@ class Connection extends EventEmitter {
 
       const data = {
         userID: socket.request['_query'].userID,
-        online: true,
+        online: true
       };
 
       console.log('🗃️ ', data);
 
       this.emit(ConnectionEventType.CONNECT, socket.id, data);
 
-      socket.on('disconnect', () => {
-        // A socket disconnected
-        console.log('💀', 'Socket disconnected:', socket.id);
-        if (Connection.sockets[socket.id]) delete Connection.sockets[socket.id];
+      /**
+       * GAME EVENTS
+       * Game events are always emitted to be listened to in Game.js
+       */
 
-        this.emit(ConnectionEventType.DISCONNECT, socket.id);
-      });
-
-      socket.on('join-game-room', (data) => {
-        // A player joined a game
-        console.log('🎮', 'Player joined game:', data);
+      socket.on(GameEventType.JOIN, (data) => {
         this.emit(GameEventType.JOIN, socket.id, data);
       });
 
-      //! xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-      //* Game Cycle Start
-
-      socket.on('game-start', () => {
-        // Host starts Game
-        console.log('🎮', `Host ${socket.id} starts game`);
+      socket.on(GameEventType.START, (data) => {
         this.emit(GameEventType.START, socket.id);
       });
 
-      socket.on('game-answers', () => {
-        const answer = socket.request['_query'].answer;
-        // Player clicks Answer
-
-        console.log('🎮', `Player ${socket.id} choose Answer ${answer}`);
-        this.emit(GameEventType.ANSWER, socket.id, answer);
+      socket.on(GameEventType.ANSWER, (data) => {
+        this.emit(GameEventType.ANSWER, socket.id, data);
       });
 
-      //* Game Cycle End
-      //! xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+      /**
+       * CHAT EVENTS
+       */
 
       socket.on('chat', (message) => {
         // Get the user by socketId
         UserSchema.findOne({
-          socketID: socket.id,
+          socketID: socket.id
         })
           .catch(() => 'Error')
           .then((user) => {
@@ -107,16 +94,20 @@ class Connection extends EventEmitter {
             io.to('general-chat').emit('chat', {
               message: message,
               time: new Date().getTime(),
-              user: userSm,
+              user: userSm
             });
           });
       });
 
-      socket.on('join-room', (room) => {
-        console.log('hey');
-        // UserHandler.changeSocketRoom(socket.request['_query'], socket.id);
-        console.log(socket.id, 'joined', room);
-        socket.join(room);
+      /**
+       * MISC
+       */
+
+      socket.on('disconnect', () => {
+        // A socket disconnected
+        console.log('💀', 'Socket disconnected:', socket.id);
+        if (Connection.sockets[socket.id]) delete Connection.sockets[socket.id];
+        this.emit(ConnectionEventType.DISCONNECT, socket.id);
       });
     });
   }
@@ -144,5 +135,5 @@ class Connection extends EventEmitter {
 module.exports = {
   Connection,
   ConnectionEventType,
-  GameEventType,
+  GameEventType
 };

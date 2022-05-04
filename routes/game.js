@@ -36,12 +36,22 @@ router.post('/host', JWT.check, async (req, res) => {
       username: host.username,
       level: host.level,
       experience: host.experience,
-      gamePoints: [],
-    },
+      gamePoints: []
+    }
   ];
 
+  console.log(
+    '🎮',
+    'Hosting new game',
+    `'${options.name}'`,
+    'by user',
+    host.username,
+    '...'
+  );
+
   if (currentGames.find((el) => el.name === options.name)?.name) {
-    res.status(400).send('Name is unavaible');
+    res.status(400).send('Name is unavailable');
+    console.log('Game name', `'${options.name}'`, 'is unavailable');
   } else {
     const newGame = new Game(options);
     currentGames.push(newGame);
