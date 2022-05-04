@@ -16,43 +16,42 @@ class User {
   }
 }
 
-// Minimal user data
+// Minimal public-facing user data
 class Small {
   constructor(data) {
-    this.username = data.username;
     this.id = data._id;
-    this.currentSkin = data.currentSkin;
-    this.experience = data.experience;
+    this.username = data.username;
+    this.currentAvatar = data.currentAvatar;
     this.level = data.level;
     this.isGuest = data.isGuest;
-    this.socketID = data.socketID;
+    this.isOnline = data.isOnline;
   }
 }
 
-// Regular user data
+// Regular user data intended for foreign users viewing profile data
 class Medium extends Small {
   constructor(data) {
     super(data);
-    this.email = data.email;
-    this.gold = data.gold;
+    this.currentSkin = data.currentSkin;
+    this.experience = data.experience;
     this.skins = data.skins;
     this.friends = data.friends;
   }
 }
 
-// User data intended for users viewing their own data
+// User data intended for users viewing their own profile data
 class Full extends Medium {
   constructor(data) {
     super(data);
-    this.isOnline = data.isOnline;
+    this.email = data.email;
+    this.gold = data.gold;
+    this.socketID = data.socketID;
+    this.nameChanges = data.nameChanges;
     this.skins = data.skins;
     this.friendRequestsIncoming = data.friendRequestsIncoming;
     this.friendRequestsOutgoing = data.friendRequestsOutgoing;
-    this.socketID = data.socketID;
-    this.currentRoom = data.currentRoom;
-    this.currentAvatar = data.currentAvatar;
     this.avaibleAvatars = data.avaibleAvatars;
-    this.nameChanges = data.nameChanges;
+    this.currentRoom = data.currentRoom;
   }
 }
 

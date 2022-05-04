@@ -2,6 +2,8 @@ const http = require('http');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv').config();
 const EventEmitter = require('events');
+const User = require('../classes/User');
+const UserSchema = require('../models/UserSchema');
 
 const PORT = process.env.PORT || 5000;
 const DATABASE_URL = `mongodb+srv://admin:${process.env.MONGO_PW}@cluster0.s1t7x.mongodb.net/test1?retryWrites=true&w=majority`;
@@ -32,7 +34,7 @@ class Connection extends EventEmitter {
 
   startSocketServer() {
     const io = require('socket.io')(this.httpServer, {
-      cors: { origin: '*', methods: ['GET', 'POST'] },
+      cors: { origin: '*', methods: ['GET', 'POST'] }
     });
 
     io.on('connection', (socket) => {
@@ -40,9 +42,12 @@ class Connection extends EventEmitter {
       console.log('💻', 'Socket connected', socket.id);
       Connection.sockets[socket.id] = socket;
 
+      //Subscribe to general-chat room
+      socket.join('general-chat');
+
       const data = {
         userID: socket.request['_query'].userID,
-        online: true,
+        online: true
       };
 
       console.log('🗃️ ', data);
@@ -57,18 +62,22 @@ class Connection extends EventEmitter {
         this.emit(ConnectionEventType.DISCONNECT, socket.id);
       });
 
-      // socket.on('chat', (data) => {
-      //   // Broadcast Message to all Users, except the sending User
-      //   socket.broadcast.emit('chat', data);
-      // });
-
-      socket.on('chat', (data) => {
-        if (!(data.room == '')) {
-          socket.to(data.room).emit('chat', data);
-        } else {
-          // Broadcast Message to all Users, except the sending User
-          socket.broadcast.emit('chat', data);
-        }
+      socket.on('chat', (message) => {
+        // Get the user by socketId
+        UserSchema.findOne({
+          socketID: socket.id
+        })
+          .catch(() => 'Error')
+          .then((user) => {
+            // Broadcast the message, date, and user (small) to the general-chat room
+            const userSm = new User.Small(user);
+            console.log('📩', userSm.username, message);
+            io.to('general-chat').emit('chat', {
+              message: message,
+              time: new Date().getTime(),
+              user: userSm
+            });
+          });
       });
 
       socket.on('join-room', (room) => {
@@ -103,5 +112,5 @@ class Connection extends EventEmitter {
 
 module.exports = {
   Connection,
-  ConnectionEventType,
+  ConnectionEventType
 };
