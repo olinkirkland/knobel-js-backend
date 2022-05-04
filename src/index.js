@@ -57,3 +57,11 @@ app.get('/avatars', cors({ origin: '*' }), async (req, res) => {
   const query = await AvatarSchema.find();
   res.send(query);
 });
+
+app.get('/impressum/:type', cors({ origin: '*' }), async (req, res) => {
+  if (req.params.type !== 'json') {
+    res.sendFile(path.join(__dirname, '../impressum.html'));
+  } else {
+    res.sendFile(path.join(__dirname, '../impressum.json'));
+  }
+});

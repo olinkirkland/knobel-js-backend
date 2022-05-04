@@ -1,7 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
 const Userhandler = require('../controllers/gameHandler');
 const Connection = require('../controllers/Connection');
-// const { currentGames } = require('../routes/game');
+const User = require('../classes/User');
 
 class Game {
   constructor(options) {
