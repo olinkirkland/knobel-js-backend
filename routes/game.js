@@ -1,15 +1,15 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
-const JWT = require('../controllers/JWT');
-const gameHandler = require('../controllers/gameHandler');
-const Game = require('../classes/Game');
-const UserHandler = require('../controllers/UserHandler');
-const User = require('../classes/User');
+const JWT = require("../controllers/JWT");
+const gameHandler = require("../controllers/gameHandler");
+const Game = require("../classes/Game");
+const UserHandler = require("../controllers/UserHandler");
+const User = require("../classes/User");
 
 const currentGames = [];
 
-router.post('/', JWT.check, (req, res) => {
+router.post("/", JWT.check, (req, res) => {
   // Return an Array with Objects of Questions, depending on the choice of Options.
   // Options:
   // difficulty: easy || medium || hard
@@ -21,12 +21,12 @@ router.post('/', JWT.check, (req, res) => {
   gameHandler.getQuestions(options).then((response) => res.send(response));
 });
 
-router.get('/categories', JWT.check, (req, res) => {
+router.get("/categories", JWT.check, (req, res) => {
   // Return avaible Categories for Questions as an Array
   res.send(gameHandler.categoriesCatalog());
 });
 
-router.post('/host', JWT.check, async (req, res) => {
+router.post("/host", JWT.check, async (req, res) => {
   const options = req.body;
   const host = await UserHandler.getFullUserById(options.hostID);
   options.players = [
@@ -36,22 +36,23 @@ router.post('/host', JWT.check, async (req, res) => {
       username: host.username,
       level: host.level,
       experience: host.experience,
-      gamePoints: []
+      gamePoints: [],
+      answers: []
     }
   ];
 
   console.log(
-    '🎮',
-    'Hosting new game',
+    "🎮",
+    "Hosting new game",
     `'${options.name}'`,
-    'by user',
+    "by user",
     host.username,
-    '...'
+    "..."
   );
 
   if (currentGames.find((el) => el.name === options.name)?.name) {
-    res.status(400).send('Name is unavailable');
-    console.log('Game name', `'${options.name}'`, 'is unavailable');
+    res.status(400).send("Name is unavailable");
+    console.log("Game name", `'${options.name}'`, "is unavailable");
   } else {
     const newGame = new Game(options);
     currentGames.push(newGame);
@@ -60,7 +61,7 @@ router.post('/host', JWT.check, async (req, res) => {
   }
 });
 
-router.get('/currentgames', JWT.check, (req, res) => {
+router.get("/currentgames", JWT.check, (req, res) => {
   res.send(currentGames);
 });
 
