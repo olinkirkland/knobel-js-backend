@@ -1,19 +1,19 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
-const Password = require('../controllers/Password');
-const JWT = require('../controllers/JWT');
-const User = require('../classes/User');
-const CookieMaker = require('../classes/CookieMaker');
-const DataValidator = require('../controllers/DataValidator');
+const Password = require("../controllers/Password");
+const JWT = require("../controllers/JWT");
+const User = require("../classes/User");
+const CookieMaker = require("../classes/CookieMaker");
+const DataValidator = require("../controllers/DataValidator");
 
-const UserHandler = require('../controllers/UserHandler');
+const UserHandler = require("../controllers/UserHandler");
 
-router.post('/login', DataValidator.checkEmail, (req, res) => {
-  console.log('👤', req.body);
+router.post("/login", DataValidator.checkEmail, (req, res) => {
+  console.log("👤", req.body);
   if (req.body.isGuest) {
     // Create new Guest with Standard PW and Email in DB
-    UserHandler.createNewUser('123', true, 'GUEST@GUEST.de').then((result) => {
+    UserHandler.createNewUser("123", true, "GUEST@GUEST.de").then((result) => {
       // Send User-Object to Frontend & Generate new Token
       const user = new User.Full(result);
       CookieMaker.createCookie(true, user).then((cookieContent) => {
@@ -24,7 +24,8 @@ router.post('/login', DataValidator.checkEmail, (req, res) => {
           cookieContent.token,
           cookieContent.options
         );
-        res.send(user);
+
+        res.status(200).send(user.id);
       });
     });
   } else {
@@ -60,7 +61,7 @@ router.post('/login', DataValidator.checkEmail, (req, res) => {
           });
         } else {
           // If Password is incorrect
-          res.status(401).send('Wrong Password!');
+          res.status(401).send("Wrong Password!");
         }
       } else {
         // If no User was found
@@ -70,21 +71,21 @@ router.post('/login', DataValidator.checkEmail, (req, res) => {
   }
 });
 
-router.post('/registrationTest', DataValidator.checkEmail, (req, res) => {
+router.post("/registrationTest", DataValidator.checkEmail, (req, res) => {
   if (process.env.DEV) {
     // Create new User in DB
     UserHandler.createNewUser(
       req.body.password,
       false,
       req.body.email.toLowerCase()
-    ).then(res.send('Success'));
+    ).then(res.send("Success"));
   } else {
-    res.status(401).send('Only for Development');
+    res.status(401).send("Only for Development");
   }
 });
 
 router.post(
-  '/registration',
+  "/registration",
   JWT.check,
   DataValidator.checkEmail,
   (req, res) => {
@@ -95,27 +96,27 @@ router.post(
       req.body.userID
     ).then((response) => {
       if (response === 400) {
-        res.status(400).send('Error: ID invalid. Please contact Support');
+        res.status(400).send("Error: ID invalid. Please contact Support");
       } else if (response === 404) {
         res
           .status(404)
-          .send('No User found with that ID. Please contact Support');
+          .send("No User found with that ID. Please contact Support");
       } else if (response === 201) {
-        res.status(201).send('Success');
+        res.status(201).send("Success");
       } else {
-        res.status(500).send('Server Failed. Please contact Support');
+        res.status(500).send("Server Failed. Please contact Support");
       }
     });
   }
 );
 
-router.get('/delete', JWT.check, (req, res) => {
+router.get("/delete", JWT.check, (req, res) => {
   // Delete a User in DB
   const id = req.query.id;
   UserHandler.deleteUser(id).then((response) => res.send(response));
 });
 
-router.post('/update', JWT.check, (req, res) => {
+router.post("/update", JWT.check, (req, res) => {
   // Update User | Must recieve ID!
   UserHandler.updateUser(
     req.body.id,
@@ -131,20 +132,20 @@ router.post('/update', JWT.check, (req, res) => {
       res.send(response);
     } else {
       response === 400
-        ? res.status(400).send('Invalid ID')
-        : res.status(401).send('Wrong Password');
+        ? res.status(400).send("Invalid ID")
+        : res.status(401).send("Wrong Password");
     }
   });
 });
 
-router.get('/:id', JWT.check, (req, res) => {
+router.get("/:id", JWT.check, (req, res) => {
   // Send a User-Model to the FrontEnd, without critical Data like Password
   UserHandler.getFullUserById(req.params.id).then((response) =>
     res.send(response)
   );
 });
 
-router.post('/multi/medium', JWT.check, async (req, res) => {
+router.post("/multi/medium", JWT.check, async (req, res) => {
   const ids = req.body.idsArray;
 
   let usersArray = [];
@@ -158,11 +159,11 @@ router.post('/multi/medium', JWT.check, async (req, res) => {
   if (usersArray.length > 0) {
     res.status(200).send(usersArray);
   } else {
-    res.status(204).send('No Content');
+    res.status(204).send("No Content");
   }
 });
 
-router.post('/multi/light', JWT.check, async (req, res) => {
+router.post("/multi/light", JWT.check, async (req, res) => {
   const ids = req.body.idsArray;
 
   let usersArray = [];
@@ -176,7 +177,7 @@ router.post('/multi/light', JWT.check, async (req, res) => {
   if (usersArray.length > 0) {
     res.status(200).send(usersArray);
   } else {
-    res.status(204).send('No Content');
+    res.status(204).send("No Content");
   }
 });
 

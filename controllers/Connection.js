@@ -48,11 +48,11 @@ class Connection extends EventEmitter {
   }
 
   startSocketServer() {
-    this.io = require('socket.io')(this.httpServer, {
-      cors: { origin: '*', methods: ['GET', 'POST'] },
+    this.io = require("socket.io")(this.httpServer, {
+      cors: { origin: "*", methods: ["GET", "POST"] }
     });
 
-    this.io.on('connection', (socket) => {
+    this.io.on("connection", (socket) => {
       // A socket connected
       console.log("💻", "Socket connected", socket.id);
       Connection.sockets[socket.id] = socket;
@@ -65,7 +65,7 @@ class Connection extends EventEmitter {
         online: true
       };
 
-      console.log("🗃️ ", data);
+      Connection.invalidateUserBySocketID(socket.id);
 
       this.emit(ConnectionEventType.CONNECT, socket.id, data);
 
@@ -111,8 +111,8 @@ class Connection extends EventEmitter {
           .then((user) => {
             // Broadcast the message, date, and user (small) to the general-chat room
             const userSm = new User.Small(user);
-            console.log('📩', userSm.username, message);
-            this.io.to('general-chat').emit('chat', {
+            console.log("📩", userSm.username, message);
+            this.io.to("general-chat").emit("chat", {
               message: message,
               time: new Date().getTime(),
               user: userSm

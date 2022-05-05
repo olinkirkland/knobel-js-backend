@@ -13,6 +13,7 @@ class User {
     this.friendRequestsIncoming = data.friendRequestsIncoming;
     this.friendRequestsOutgoing = data.friendRequestsOutgoing;
     this.isGuest = data.isGuest;
+    this.inventory = data.inventory;
   }
 }
 
