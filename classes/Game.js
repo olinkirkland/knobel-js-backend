@@ -35,11 +35,6 @@ class Game {
     connection.on(GameEventType.RESULT, this.onGameResult.bind(this));
   }
 
-  test(socketID, data) {
-    console.log(data, socketID);
-    Connection.sockets[socketID].emit("Did it");
-  }
-
   async onGameJoin(socketID, data) {
     const user = new User.Full(await UserHandler.getUserBySocketID(socketID));
 
@@ -49,7 +44,8 @@ class Game {
       username: user.username,
       level: user.level,
       experience: user.experience,
-      gamePoints: []
+      gamePoints: [],
+      answers: []
     };
 
     console.log("🎮", user.username, "joined game", `'${this.roomID}'`);
@@ -110,6 +106,13 @@ class Game {
         ? (roundRanking[i].points = i > 3 ? 10 : 50 - i * 10)
         : 0;
     }
+
+    // Add Points to each Player
+    roundRanking.forEach((el) =>
+      this.players
+        .find((player) => player.userID === el.userID)
+        ?.gamePoints.push(el.points)
+    );
 
     roundRanking.sort(compareRoundResult);
 
