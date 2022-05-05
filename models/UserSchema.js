@@ -43,10 +43,6 @@ const userSchema = new Schema({
     type: Boolean,
     required: true,
   },
-  skins: {
-    type: Array,
-    required: true,
-  },
   friends: {
     type: Array,
     required: true,
@@ -79,10 +75,10 @@ const userSchema = new Schema({
     required: true,
     type: String,
   },
-  avaibleAvatars: {
+  inventory: {
     type: Array,
-    required: false,
-  },
+    required: true,
+  }
 });
 
 const User = mongoose.model('User', userSchema);

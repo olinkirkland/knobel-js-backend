@@ -39,12 +39,12 @@ async function createNewUser(password, isGuest, email) {
     level: 1,
     isOnline: false,
     isGuest: isGuest,
-    skins: startSkins,
     friends: [],
     friendRequestsIncoming: [],
     friendRequestsOutgoing: [],
     nameChanges: 0,
     currentAvatar: `https://avatars.dicebear.com/api/personas/${username}.svg`,
+    inventory: ['skin-df8gs8df98','avatar-2834cf8f', 'name-change']
   });
 
   await newUser.save();
