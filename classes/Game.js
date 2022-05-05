@@ -70,19 +70,13 @@ class Game {
 
     console.log("🎮", "Game", `'${this.name}'`, "started");
 
-    Connection.instance.io.to(this.roomID).emit('game-start', question);
-    
-    // this.players.forEach((el) => {
-    //   Connection.sockets[el.socketID].emit('game-start', question);
-    // });
+    Connection.instance.io.to(this.roomID).emit("game-start");
   }
 
   async onGameRoundSetup() {
     const question = await this.getQuestions();
 
-    this.players.forEach((el) => {
-      Connection.sockets[el.socketID].emit("game-round-setup", question);
-    });
+    Connection.instance.io.to(this.roomID).emit("game-round-setup");
   }
 
   async onGameAnswer(socketID, data) {
@@ -119,11 +113,9 @@ class Game {
 
     roundRanking.sort(compareRoundResult);
 
-    this.players.forEach((el) => {
-      Connection.sockets[el.socketID].emit("game-round-result", {
-        correctAnswer: this.question.correct_answer,
-        roundRanking: roundRanking
-      });
+    Connection.instance.io.to(this.roomID).emit("game-round-result", {
+      correctAnswer: this.question.correct_answer,
+      roundRanking: roundRanking
     });
   }
 
