@@ -14,7 +14,6 @@ const usersRouter = require('../routes/users');
 const gameRoute = require('../routes/game').router;
 const friendsRoute = require('../routes/friends');
 const cheatRoute = require('../routes/cheat');
-const inventoryRoute = require('../routes/inventory');
 
 // Connection
 const connection = Connection.instance;
@@ -34,7 +33,6 @@ app.use('/users', usersRouter);
 app.use('/game', gameRoute);
 app.use('/friends', friendsRoute);
 app.use('/cheat', cheatRoute);
-app.use('/inventory', inventoryRoute);
 
 app.get('/testcors', (req, res) => {
   res.send('Hello world!!!');

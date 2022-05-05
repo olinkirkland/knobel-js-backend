@@ -10,7 +10,7 @@ async function giveItem(userId, itemId) {
   userSchema.save();
 
   // Console log inventory
-  console.log('🗃️', userSchema.inventory);
+  console.log('🗃️', userSchema.inventory.map(item => item));
 }
 
 async function giveExperience(userId, amount) {
