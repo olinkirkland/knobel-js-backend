@@ -3,6 +3,7 @@ const { Connection, GameEventType } = require('../controllers/Connection');
 const UserHandler = require('../controllers/UserHandler');
 const User = require('../classes/User');
 const UserSchema = require('../models/UserSchema');
+const axios = require('axios');
 
 class Game {
   constructor(options) {
@@ -16,9 +17,9 @@ class Game {
     this.gameMode = options.gameMode;
     this.gameCategory = options.category;
     this.gameDifficulty = options.difficulty;
-    this.gameRounds = options.rounds;
+    this.gameRounds = options.rounds ? options.rounds : 10;
     this.currentRound = 0;
-    this.question;
+    this.question = {};
 
     this.addConnectionListeners();
 
@@ -30,6 +31,7 @@ class Game {
     connection.on(GameEventType.JOIN, this.onGameJoin.bind(this));
     connection.on(GameEventType.START, this.onGameStart.bind(this));
     connection.on(GameEventType.ANSWER, this.onGameAnswer.bind(this));
+    connection.on(GameEventType.SETUP, this.onGameRoundSetup.bind(this));
   }
 
   test(socketID, data) {
@@ -67,10 +69,16 @@ class Game {
 
     console.log('🎮', 'Game', `'${this.name}'`, 'started');
 
-    const question = this.getQuestions();
-
     this.players.forEach((el) => {
       Connection.sockets[el.socketID].emit('game-start', question);
+    });
+  }
+
+  async onGameRoundSetup() {
+    const question = await this.getQuestions();
+
+    this.players.forEach((el) => {
+      Connection.sockets[el.socketID].emit('game-round-setup', question);
     });
   }
 
@@ -90,19 +98,37 @@ class Game {
       ? `&category=${this.getCategoryID(this.category)}`
       : '';
 
-    if (this.currentRound <= this.gameRounds) {
+    if (this.currentRound < this.gameRounds) {
       // Build URL from Options
 
-      const url = `https://opentdb.com/api.php?${
-        amount + type + difficulty + category
+      const url = `https://opentdb.com/api.php?amount=1${
+        difficulty + type + category
       }`;
 
       // Fetch Questions
-      this.question = (await axios.get(url)).data.results;
+      const questionFetch = (await axios.get(url)).data.results[0];
 
-      return this.question;
+      const question = {
+        category: questionFetch.category,
+        difficulty: questionFetch.difficulty,
+        question: questionFetch.question,
+        answers: [],
+      };
+
+      for (let i = 0; i < questionFetch.incorrect_answers.length; i++) {
+        question.answers[i] = questionFetch.incorrect_answers[i];
+      }
+
+      question.answers.splice(
+        Math.floor(Math.random() * (question.answers - 1)),
+        0,
+        questionFetch.correct_answer
+      );
+
+      this.currentRound++;
+      return question;
     } else {
-      return;
+      return false;
     }
   }
 

@@ -72,7 +72,7 @@ class Connection extends EventEmitter {
         this.emit(GameEventType.JOIN, socket.id, data);
       });
 
-      socket.on(GameEventType.START, () => {
+      socket.on(GameEventType.START, (data) => {
         this.emit(GameEventType.START, socket.id);
       });
 
@@ -80,12 +80,12 @@ class Connection extends EventEmitter {
         this.emit(GameEventType.ANSWER, socket.id, data);
       });
 
-      socket.on(GameEventType.SETUP, () => {
-        this.emit(GameEventType.SETUP);
+      socket.on(GameEventType.SETUP, (data) => {
+        this.emit(GameEventType.SETUP, socket.id, data);
       });
 
-      socket.on(GameEventType.RESULT, () => {
-        this.emit(GameEventType.RESULT);
+      socket.on(GameEventType.RESULT, (data) => {
+        this.emit(GameEventType.RESULT, socket.id, data);
       });
 
       socket.on(GameEventType.END, (data) => {
