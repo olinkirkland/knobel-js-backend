@@ -11,6 +11,7 @@ const DATABASE_URL = `mongodb+srv://admin:${process.env.MONGO_PW}@cluster0.s1t7x
 class ConnectionEventType {
   static CONNECT = 'socket-connect'; // Socket connected
   static DISCONNECT = 'socket-disconnect'; // Socket disconnected
+  static INVALIDATE = 'invalidate-user'; // Invalidate user data (tells front-end to refresh)
 }
 
 class GameEventType {
@@ -26,6 +27,11 @@ class Connection extends EventEmitter {
 
   constructor() {
     super();
+  }
+
+  static invalidateUserBySocketID(socketID) {
+    if (!socketID) return;
+    Connection.getSocket(socketID).emit(ConnectionEventType.INVALIDATE);
   }
 
   static getSocket(id) {

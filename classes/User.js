@@ -47,11 +47,12 @@ class Full extends Medium {
     this.gold = data.gold;
     this.socketID = data.socketID;
     this.nameChanges = data.nameChanges;
-    this.skins = data.skins;
+    // this.skins = data.skins;
     this.friendRequestsIncoming = data.friendRequestsIncoming;
     this.friendRequestsOutgoing = data.friendRequestsOutgoing;
-    this.avaibleAvatars = data.avaibleAvatars;
+    // this.avaibleAvatars = data.avaibleAvatars;
     this.currentRoom = data.currentRoom;
+    this.inventory = data.inventory;
   }
 }
 

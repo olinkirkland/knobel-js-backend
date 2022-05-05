@@ -7,13 +7,14 @@ const cookieParser = require('cookie-parser');
 const path = require('path');
 const app = express();
 const AvatarSchema = require('../models/AvatarSchema');
+const User = require('../models/UserSchema');
 
 // Routes
 const usersRouter = require('../routes/users');
 const gameRoute = require('../routes/game').router;
 const friendsRoute = require('../routes/friends');
 const cheatRoute = require('../routes/cheat');
-const User = require('../models/UserSchema');
+const inventoryRoute = require('../routes/inventory');
 
 // Connection
 const connection = Connection.instance;
@@ -23,7 +24,7 @@ connection.connect(app);
 app.use(
   cors({
     origin: ['http://localhost:3000', 'http://localhost:8000'],
-    credentials: true,
+    credentials: true
   })
 );
 app.use(express.json());
@@ -33,6 +34,7 @@ app.use('/users', usersRouter);
 app.use('/game', gameRoute);
 app.use('/friends', friendsRoute);
 app.use('/cheat', cheatRoute);
+app.use('/inventory', inventoryRoute);
 
 app.get('/testcors', (req, res) => {
   res.send('Hello world!!!');
