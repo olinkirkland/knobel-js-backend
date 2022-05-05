@@ -43,7 +43,7 @@ async function createNewUser(password, isGuest, email) {
     friendRequestsIncoming: [],
     friendRequestsOutgoing: [],
     nameChanges: 0,
-    currentAvatar: `https://avatars.dicebear.com/api/personas/${username}.svg`,
+    currentAvatar: "oO7GXCjER0DbQioa2Mwqx",
     inventory: [
       "oO7GXCjER0DbQioa2Mwqx", // Viking
       "Gpm00ST2s7WypfINoDx4i", // Day of the Dead
@@ -170,6 +170,8 @@ async function updateUser(
     }
   }
 
+  Connection.invalidateUserBySocketID(user.socketID);
+
   if (result !== "Wrong Password" || result !== "Wrong ID") {
     return getFullUserById(id);
   } else {
@@ -197,10 +199,7 @@ async function upgradeGuest(email, password, id) {
       { password: hashed, email: email, isGuest: false, nameChanges: 1 }
     );
 
-    // Invalidate user data for this user
-    const socketID = user.socketID;
-    // console.log('invalidating user', socketID);
-    if (socketID) Connection.getSocket(socketID).emit("invalidate-user");
+    Connection.invalidateUserBySocketID(user.socketID);
 
     console.log(
       "✔️",

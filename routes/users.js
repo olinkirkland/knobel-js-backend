@@ -8,6 +8,7 @@ const CookieMaker = require("../classes/CookieMaker");
 const DataValidator = require("../controllers/DataValidator");
 
 const UserHandler = require("../controllers/UserHandler");
+const { Connection } = require("../controllers/Connection");
 
 router.post("/login", DataValidator.checkEmail, (req, res) => {
   console.log("👤", req.body);
@@ -129,6 +130,7 @@ router.post("/update", JWT.check, (req, res) => {
   ).then((response) => {
     // Respond with true or false to Frontend, depending on Success
     if (response !== 401 || response !== 400) {
+      // Success!
       res.send(response);
     } else {
       response === 400
