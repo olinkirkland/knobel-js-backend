@@ -31,6 +31,11 @@ class Game {
     connection.on(GameEventType.ANSWER, this.onGameAnswer.bind(this));
   }
 
+  test(socketID, data) {
+    console.log(data, socketID);
+    Connection.sockets[socketID].emit('Did it');
+  }
+
   async onGameJoin(socketID, data) {
     const user = new User.Small(await UserHandler.getUserBySocketID(socketID));
 
@@ -41,15 +46,16 @@ class Game {
     Connection.sockets[socketID].emit('game-join-success', data);
   }
 
-  async onGameStart(socketID, data) {
+  async onGameStart(socketID) {
     const user = new User.Small(await UserHandler.getUserBySocketID(socketID));
 
     // Only the host can start the game
     if (user.id !== this.hostID) return;
 
     console.log('🎮', 'Game', `'${this.name}'`, 'started');
-    this.startCountdown();
-    setTimeout(() => {}, 1000 * 60 * 15);
+    
+    
+    
   }
 
   async onGameAnswer(socketID, data) {
@@ -59,22 +65,6 @@ class Game {
     console.log(JSON.stringify(data));
 
     this.players.find((el) => el.socketID === socketID).answers.push(answer);
-  }
-
-  startCountdown() {
-    let counter = 3;
-    const interval = setInterval(() => {
-      if (counter !== 'START') counter--;
-      if (counter === 0) {
-        counter = 'START';
-        return getQuestions();
-      }
-      if (counter === 'START') {
-        clearInterval(interval);
-        return;
-      }
-      if (counter) return counter;
-    }, 1000);
   }
 
   async getQuestions() {

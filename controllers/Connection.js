@@ -17,6 +17,9 @@ class GameEventType {
   static JOIN = 'game-join'; // Player joined game
   static START = 'game-start'; // Host starts the Game
   static ANSWER = 'game-answer'; // User clicks on Answer
+  static SETUP = 'game-round-setup'; // Send information for the current game round, e.g. Questions & Answers
+  static RESULT = 'game-round-result'; // Send Results from the Round to FE. Also start next round or goto END
+  static END = 'game-ended'; // Send information about the round, e.g. Ranking for the ended Round.
 }
 
 class Connection extends EventEmitter {
@@ -40,7 +43,7 @@ class Connection extends EventEmitter {
 
   startSocketServer() {
     const io = require('socket.io')(this.httpServer, {
-      cors: { origin: '*', methods: ['GET', 'POST'] }
+      cors: { origin: '*', methods: ['GET', 'POST'] },
     });
 
     io.on('connection', (socket) => {
@@ -53,7 +56,7 @@ class Connection extends EventEmitter {
 
       const data = {
         userID: socket.request['_query'].userID,
-        online: true
+        online: true,
       };
 
       console.log('🗃️ ', data);
@@ -69,12 +72,24 @@ class Connection extends EventEmitter {
         this.emit(GameEventType.JOIN, socket.id, data);
       });
 
-      socket.on(GameEventType.START, (data) => {
+      socket.on(GameEventType.START, () => {
         this.emit(GameEventType.START, socket.id);
       });
 
       socket.on(GameEventType.ANSWER, (data) => {
         this.emit(GameEventType.ANSWER, socket.id, data);
+      });
+
+      socket.on(GameEventType.SETUP, () => {
+        this.emit(GameEventType.SETUP);
+      });
+
+      socket.on(GameEventType.RESULT, () => {
+        this.emit(GameEventType.RESULT);
+      });
+
+      socket.on(GameEventType.END, (data) => {
+        this.emit(GameEventType.END, socket.id, data);
       });
 
       /**
@@ -84,7 +99,7 @@ class Connection extends EventEmitter {
       socket.on('chat', (message) => {
         // Get the user by socketId
         UserSchema.findOne({
-          socketID: socket.id
+          socketID: socket.id,
         })
           .catch(() => 'Error')
           .then((user) => {
@@ -94,7 +109,7 @@ class Connection extends EventEmitter {
             io.to('general-chat').emit('chat', {
               message: message,
               time: new Date().getTime(),
-              user: userSm
+              user: userSm,
             });
           });
       });
@@ -135,5 +150,5 @@ class Connection extends EventEmitter {
 module.exports = {
   Connection,
   ConnectionEventType,
-  GameEventType
+  GameEventType,
 };

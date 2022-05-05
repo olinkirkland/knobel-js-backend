@@ -13,6 +13,7 @@ const usersRouter = require('../routes/users');
 const gameRoute = require('../routes/game').router;
 const friendsRoute = require('../routes/friends');
 const cheatRoute = require('../routes/cheat');
+
 const User = require('../models/UserSchema');
 
 // Connection
