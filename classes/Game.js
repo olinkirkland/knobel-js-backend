@@ -1,9 +1,9 @@
-const { v4: uuidv4 } = require('uuid');
-const { Connection, GameEventType } = require('../controllers/Connection');
-const UserHandler = require('../controllers/UserHandler');
-const User = require('../classes/User');
-const UserSchema = require('../models/UserSchema');
-const axios = require('axios');
+const { v4: uuidv4 } = require("uuid");
+const { Connection, GameEventType } = require("../controllers/Connection");
+const UserHandler = require("../controllers/UserHandler");
+const User = require("../classes/User");
+const UserSchema = require("../models/UserSchema");
+const axios = require("axios");
 
 class Game {
   constructor(options) {
@@ -23,7 +23,7 @@ class Game {
 
     this.addConnectionListeners();
 
-    console.log('✔️', 'Game', `'${this.name}'`, 'was created successfully');
+    console.log("✔️", "Game", `'${this.name}'`, "was created successfully");
   }
 
   addConnectionListeners() {
@@ -37,7 +37,7 @@ class Game {
 
   test(socketID, data) {
     console.log(data, socketID);
-    Connection.sockets[socketID].emit('Did it');
+    Connection.sockets[socketID].emit("Did it");
   }
 
   async onGameJoin(socketID, data) {
@@ -49,17 +49,17 @@ class Game {
       username: user.username,
       level: user.level,
       experience: user.experience,
-      gamePoints: [],
+      gamePoints: []
     };
 
-    console.log('🎮', user.username, 'joined game', `'${this.roomID}'`);
+    console.log("🎮", user.username, "joined game", `'${this.roomID}'`);
     this.players.push(player);
 
     // Update User-currentRoom in DB //? Neccessary?
     UserSchema.updateOne({ socketID: socketID }, { currentRoom: this.roomID });
 
     // Tell the user they joined the game
-    Connection.sockets[socketID].emit('game-join-success', data);
+    Connection.sockets[socketID].emit("game-join-success", data);
   }
 
   async onGameStart(socketID) {
@@ -68,10 +68,10 @@ class Game {
     // Only the host can start the game
     if (user.id !== this.hostID) return;
 
-    console.log('🎮', 'Game', `'${this.name}'`, 'started');
+    console.log("🎮", "Game", `'${this.name}'`, "started");
 
     this.players.forEach((el) => {
-      Connection.sockets[el.socketID].emit('game-start', question);
+      Connection.sockets[el.socketID].emit("game-start", question);
     });
   }
 
@@ -79,14 +79,14 @@ class Game {
     const question = await this.getQuestions();
 
     this.players.forEach((el) => {
-      Connection.sockets[el.socketID].emit('game-round-setup', question);
+      Connection.sockets[el.socketID].emit("game-round-setup", question);
     });
   }
 
   async onGameAnswer(socketID, data) {
     const user = new User.Small(await UserHandler.getUserBySocketID(socketID));
 
-    console.log('🎮', 'User', user.username, 'answered');
+    console.log("🎮", "User", user.username, "answered");
     console.log(JSON.stringify(data));
 
     this.players.find((el) => el.socketID === socketID).answers.push(answer);
@@ -100,12 +100,12 @@ class Game {
         ? roundRanking.push({
             userID: player.userID,
             correctAnswer: true,
-            points: '',
+            points: ""
           })
         : roundRanking.push({
             userID: player.userID,
             correctAnswer: false,
-            points: 0,
+            points: 0
           })
     );
 
@@ -118,19 +118,19 @@ class Game {
     roundRanking.sort(compareRoundResult);
 
     this.players.forEach((el) => {
-      Connection.sockets[el.socketID].emit('game-round-result', {
+      Connection.sockets[el.socketID].emit("game-round-result", {
         correctAnswer: this.question.correct_answer,
-        roundRanking: roundRanking,
+        roundRanking: roundRanking
       });
     });
   }
 
   async getQuestions() {
-    const difficulty = this.difficulty ? `&difficulty=${this.difficulty}` : '';
-    const type = this.gameMode ? `&type=${this.gameMode}` : '&type=multiple';
+    const difficulty = this.difficulty ? `&difficulty=${this.difficulty}` : "";
+    const type = this.gameMode ? `&type=${this.gameMode}` : "&type=multiple";
     const category = this.category
       ? `&category=${this.getCategoryID(this.category)}`
-      : '';
+      : "";
 
     if (this.currentRound < this.gameRounds) {
       // Build URL from Options
@@ -146,7 +146,7 @@ class Game {
         category: questionFetch.category,
         difficulty: questionFetch.difficulty,
         question: questionFetch.question,
-        answers: [],
+        answers: []
       };
 
       question.answers = questionFetch.incorrect_answers;
@@ -193,7 +193,7 @@ class Game {
       { _id: userID },
       { experience: experience }
     ).catch((err) => {
-      console.log('AddXP-Error: ', err);
+      console.log("AddXP-Error: ", err);
       error = 512;
     });
 
@@ -205,7 +205,7 @@ class Game {
 
     await UserSchema.findByIdAndUpdate({ _id: userID }, { gold: gold }).catch(
       (err) => {
-        console.log('AddGold-Error: ', err);
+        console.log("AddGold-Error: ", err);
         error = 512;
       }
     );
@@ -217,80 +217,80 @@ class Game {
     // Get ID for Category
 
     switch (category) {
-      case 'General Knowledge':
-        return '9';
+      case "General Knowledge":
+        return "9";
 
-      case 'Books':
-        return '10';
+      case "Books":
+        return "10";
 
-      case 'Film':
-        return '11';
+      case "Film":
+        return "11";
 
-      case 'Music':
-        return '12';
+      case "Music":
+        return "12";
 
-      case 'Musicals & Theatres':
-        return '13';
+      case "Musicals & Theatres":
+        return "13";
 
-      case 'TV':
-        return '14';
+      case "TV":
+        return "14";
 
-      case 'Video Games':
-        return '15';
+      case "Video Games":
+        return "15";
 
-      case 'Board Games':
-        return '16';
+      case "Board Games":
+        return "16";
 
-      case 'Science & Nature':
-        return '17';
+      case "Science & Nature":
+        return "17";
 
-      case 'Computers':
-        return '18';
+      case "Computers":
+        return "18";
 
-      case 'Mathematics':
-        return '19';
+      case "Mathematics":
+        return "19";
 
-      case 'Mythology':
-        return '20';
+      case "Mythology":
+        return "20";
 
-      case 'Sports':
-        return '21';
+      case "Sports":
+        return "21";
 
-      case 'Geography':
-        return '22';
+      case "Geography":
+        return "22";
 
-      case 'History':
-        return '23';
+      case "History":
+        return "23";
 
-      case 'Politics':
-        return '24';
+      case "Politics":
+        return "24";
 
-      case 'Art':
-        return '25';
+      case "Art":
+        return "25";
 
-      case 'Celebrities':
-        return '26';
+      case "Celebrities":
+        return "26";
 
-      case 'Animals':
-        return '27';
+      case "Animals":
+        return "27";
 
-      case 'Vehicles':
-        return '28';
+      case "Vehicles":
+        return "28";
 
-      case 'Comics':
-        return '29';
+      case "Comics":
+        return "29";
 
-      case 'Gadgets':
-        return '30';
+      case "Gadgets":
+        return "30";
 
-      case 'Anime & Manga':
-        return '31';
+      case "Anime & Manga":
+        return "31";
 
-      case 'Cartoon & Animations':
-        return '32';
+      case "Cartoon & Animations":
+        return "32";
 
       default:
-        return '9';
+        return "9";
     }
   }
 }
