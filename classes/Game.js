@@ -19,7 +19,7 @@ class Game {
     this.gameDifficulty = options.difficulty;
     this.gameRounds = options.rounds ? options.rounds : 10;
     this.currentRound = 0;
-    this.question = {};
+    this.correctAnswer = -2;
 
     this.addConnectionListeners();
 
@@ -32,6 +32,7 @@ class Game {
     connection.on(GameEventType.START, this.onGameStart.bind(this));
     connection.on(GameEventType.ANSWER, this.onGameAnswer.bind(this));
     connection.on(GameEventType.SETUP, this.onGameRoundSetup.bind(this));
+    connection.on(GameEventType.RESULT, this.onGameResult.bind(this));
   }
 
   test(socketID, data) {
@@ -91,6 +92,39 @@ class Game {
     this.players.find((el) => el.socketID === socketID).answers.push(answer);
   }
 
+  async onGameResult() {
+    const roundRanking = [];
+
+    this.players.forEach((player) =>
+      answers[this.currentRound] === this.correctAnswer
+        ? roundRanking.push({
+            userID: player.userID,
+            correctAnswer: true,
+            points: '',
+          })
+        : roundRanking.push({
+            userID: player.userID,
+            correctAnswer: false,
+            points: 0,
+          })
+    );
+
+    for (let i = 0; i < roundRanking.length; i++) {
+      roundRanking[i].correctAnswer
+        ? (roundRanking[i].points = i > 3 ? 10 : 50 - i * 10)
+        : 0;
+    }
+
+    roundRanking.sort(compareRoundResult);
+
+    this.players.forEach((el) => {
+      Connection.sockets[el.socketID].emit('game-round-result', {
+        correctAnswer: this.question.correct_answer,
+        roundRanking: roundRanking,
+      });
+    });
+  }
+
   async getQuestions() {
     const difficulty = this.difficulty ? `&difficulty=${this.difficulty}` : '';
     const type = this.gameMode ? `&type=${this.gameMode}` : '&type=multiple';
@@ -115,15 +149,11 @@ class Game {
         answers: [],
       };
 
-      for (let i = 0; i < questionFetch.incorrect_answers.length; i++) {
-        question.answers[i] = questionFetch.incorrect_answers[i];
-      }
+      question.answers = questionFetch.incorrect_answers;
 
-      question.answers.splice(
-        Math.floor(Math.random() * (question.answers - 1)),
-        0,
-        questionFetch.correct_answer
-      );
+      this.correctAnswer = Math.floor(Math.random() * (question.answers - 1));
+
+      question.answers.splice(random, 0, questionFetch.correct_answer);
 
       this.currentRound++;
       return question;
@@ -263,6 +293,16 @@ class Game {
         return '9';
     }
   }
+}
+
+function compareRoundResult(a, b) {
+  if (a.points < b.points) {
+    return -1;
+  }
+  if (a.points > b.points) {
+    return 1;
+  }
+  return 0;
 }
 
 module.exports = Game;
