@@ -70,9 +70,11 @@ class Game {
 
     console.log('🎮', 'Game', `'${this.name}'`, 'started');
 
-    this.players.forEach((el) => {
-      Connection.sockets[el.socketID].emit('game-start', question);
-    });
+    Connection.instance.io.to(this.roomID).emit('game-start', question);
+    
+    // this.players.forEach((el) => {
+    //   Connection.sockets[el.socketID].emit('game-start', question);
+    // });
   }
 
   async onGameRoundSetup() {
