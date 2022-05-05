@@ -2,6 +2,7 @@ const { v4: uuidv4 } = require('uuid');
 const { Connection, GameEventType } = require('../controllers/Connection');
 const UserHandler = require('../controllers/UserHandler');
 const User = require('../classes/User');
+const UserSchema = require('../models/UserSchema');
 
 class Game {
   constructor(options) {
@@ -37,25 +38,40 @@ class Game {
   }
 
   async onGameJoin(socketID, data) {
-    const user = new User.Small(await UserHandler.getUserBySocketID(socketID));
+    const user = new User.Full(await UserHandler.getUserBySocketID(socketID));
+
+    const player = {
+      userID: user.id,
+      socketID: socketID,
+      username: user.username,
+      level: user.level,
+      experience: user.experience,
+      gamePoints: [],
+    };
 
     console.log('🎮', user.username, 'joined game', `'${this.roomID}'`);
-    this.players.push(user);
+    this.players.push(player);
+
+    // Update User-currentRoom in DB //? Neccessary?
+    UserSchema.updateOne({ socketID: socketID }, { currentRoom: this.roomID });
 
     // Tell the user they joined the game
     Connection.sockets[socketID].emit('game-join-success', data);
   }
 
   async onGameStart(socketID) {
-    const user = new User.Small(await UserHandler.getUserBySocketID(socketID));
+    const user = new User.Full(await UserHandler.getUserBySocketID(socketID));
 
     // Only the host can start the game
     if (user.id !== this.hostID) return;
 
     console.log('🎮', 'Game', `'${this.name}'`, 'started');
-    
-    
-    
+
+    const question = this.getQuestions();
+
+    this.players.forEach((el) => {
+      Connection.sockets[el.socketID].emit('game-start', question);
+    });
   }
 
   async onGameAnswer(socketID, data) {
