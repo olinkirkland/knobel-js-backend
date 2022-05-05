@@ -2,6 +2,8 @@ const { v4: uuidv4 } = require('uuid');
 const { Connection, GameEventType } = require('../controllers/Connection');
 const UserHandler = require('../controllers/UserHandler');
 const User = require('../classes/User');
+const UserSchema = require('../models/UserSchema');
+const axios = require('axios');
 
 class Game {
   constructor(options) {
@@ -15,9 +17,9 @@ class Game {
     this.gameMode = options.gameMode;
     this.gameCategory = options.category;
     this.gameDifficulty = options.difficulty;
-    this.gameRounds = options.rounds;
+    this.gameRounds = options.rounds ? options.rounds : 10;
     this.currentRound = 0;
-    this.question;
+    this.correctAnswer = -2;
 
     this.addConnectionListeners();
 
@@ -29,27 +31,56 @@ class Game {
     connection.on(GameEventType.JOIN, this.onGameJoin.bind(this));
     connection.on(GameEventType.START, this.onGameStart.bind(this));
     connection.on(GameEventType.ANSWER, this.onGameAnswer.bind(this));
+    connection.on(GameEventType.SETUP, this.onGameRoundSetup.bind(this));
+    connection.on(GameEventType.RESULT, this.onGameResult.bind(this));
+  }
+
+  test(socketID, data) {
+    console.log(data, socketID);
+    Connection.sockets[socketID].emit('Did it');
   }
 
   async onGameJoin(socketID, data) {
-    const user = new User.Small(await UserHandler.getUserBySocketID(socketID));
+    const user = new User.Full(await UserHandler.getUserBySocketID(socketID));
+
+    const player = {
+      userID: user.id,
+      socketID: socketID,
+      username: user.username,
+      level: user.level,
+      experience: user.experience,
+      gamePoints: [],
+    };
 
     console.log('🎮', user.username, 'joined game', `'${this.roomID}'`);
-    this.players.push(user);
+    this.players.push(player);
+
+    // Update User-currentRoom in DB //? Neccessary?
+    UserSchema.updateOne({ socketID: socketID }, { currentRoom: this.roomID });
 
     // Tell the user they joined the game
     Connection.sockets[socketID].emit('game-join-success', data);
   }
 
-  async onGameStart(socketID, data) {
-    const user = new User.Small(await UserHandler.getUserBySocketID(socketID));
+  async onGameStart(socketID) {
+    const user = new User.Full(await UserHandler.getUserBySocketID(socketID));
 
     // Only the host can start the game
     if (user.id !== this.hostID) return;
 
     console.log('🎮', 'Game', `'${this.name}'`, 'started');
-    this.startCountdown();
-    setTimeout(() => {}, 1000 * 60 * 15);
+
+    this.players.forEach((el) => {
+      Connection.sockets[el.socketID].emit('game-start', question);
+    });
+  }
+
+  async onGameRoundSetup() {
+    const question = await this.getQuestions();
+
+    this.players.forEach((el) => {
+      Connection.sockets[el.socketID].emit('game-round-setup', question);
+    });
   }
 
   async onGameAnswer(socketID, data) {
@@ -61,20 +92,37 @@ class Game {
     this.players.find((el) => el.socketID === socketID).answers.push(answer);
   }
 
-  startCountdown() {
-    let counter = 3;
-    const interval = setInterval(() => {
-      if (counter !== 'START') counter--;
-      if (counter === 0) {
-        counter = 'START';
-        return getQuestions();
-      }
-      if (counter === 'START') {
-        clearInterval(interval);
-        return;
-      }
-      if (counter) return counter;
-    }, 1000);
+  async onGameResult() {
+    const roundRanking = [];
+
+    this.players.forEach((player) =>
+      answers[this.currentRound] === this.correctAnswer
+        ? roundRanking.push({
+            userID: player.userID,
+            correctAnswer: true,
+            points: '',
+          })
+        : roundRanking.push({
+            userID: player.userID,
+            correctAnswer: false,
+            points: 0,
+          })
+    );
+
+    for (let i = 0; i < roundRanking.length; i++) {
+      roundRanking[i].correctAnswer
+        ? (roundRanking[i].points = i > 3 ? 10 : 50 - i * 10)
+        : 0;
+    }
+
+    roundRanking.sort(compareRoundResult);
+
+    this.players.forEach((el) => {
+      Connection.sockets[el.socketID].emit('game-round-result', {
+        correctAnswer: this.question.correct_answer,
+        roundRanking: roundRanking,
+      });
+    });
   }
 
   async getQuestions() {
@@ -84,19 +132,33 @@ class Game {
       ? `&category=${this.getCategoryID(this.category)}`
       : '';
 
-    if (this.currentRound <= this.gameRounds) {
+    if (this.currentRound < this.gameRounds) {
       // Build URL from Options
 
-      const url = `https://opentdb.com/api.php?${
-        amount + type + difficulty + category
+      const url = `https://opentdb.com/api.php?amount=1${
+        difficulty + type + category
       }`;
 
       // Fetch Questions
-      this.question = (await axios.get(url)).data.results;
+      const questionFetch = (await axios.get(url)).data.results[0];
 
-      return this.question;
+      const question = {
+        category: questionFetch.category,
+        difficulty: questionFetch.difficulty,
+        question: questionFetch.question,
+        answers: [],
+      };
+
+      question.answers = questionFetch.incorrect_answers;
+
+      this.correctAnswer = Math.floor(Math.random() * (question.answers - 1));
+
+      question.answers.splice(random, 0, questionFetch.correct_answer);
+
+      this.currentRound++;
+      return question;
     } else {
-      return;
+      return false;
     }
   }
 
@@ -231,6 +293,16 @@ class Game {
         return '9';
     }
   }
+}
+
+function compareRoundResult(a, b) {
+  if (a.points < b.points) {
+    return -1;
+  }
+  if (a.points > b.points) {
+    return 1;
+  }
+  return 0;
 }
 
 module.exports = Game;
