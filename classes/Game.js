@@ -33,6 +33,7 @@ class Game {
     connection.on(GameEventType.ANSWER, this.onGameAnswer.bind(this));
     connection.on(GameEventType.SETUP, this.onGameRoundSetup.bind(this));
     connection.on(GameEventType.RESULT, this.onGameResult.bind(this));
+    connection.on(GameEventType.END, this.onGameEnd.bind(this));
   }
 
   async onGameJoin(socketID, data) {
@@ -71,8 +72,9 @@ class Game {
 
   async onGameRoundSetup() {
     const question = await this.getQuestions();
+    question.lastRound = this.currentRound === this.gameRounds ? true : false;
 
-    Connection.instance.io.to(this.roomID).emit("game-round-setup");
+    Connection.instance.io.to(this.roomID).emit("game-round-setup", question);
   }
 
   async onGameAnswer(socketID, data) {
@@ -120,6 +122,28 @@ class Game {
       correctAnswer: this.question.correct_answer,
       roundRanking: roundRanking
     });
+  }
+
+  async onGameEnd() {
+    this.players.forEach((player) => {
+      for (let i = 1; i < player.gamePoints; i++) {
+        player.gamePoints[0] = player.gamePoints[0] + player.gamePoints[i];
+      }
+    });
+
+    const gameRanking = this.players.map((player) => {
+      return { userID: player.userID, points: player.gamePoints[0] };
+    });
+
+    gameRanking.sort(compareGameResult);
+
+    for (let i = 0; i < gameRanking; i++) {
+      this.addExperience(gameRanking.userID, i > 3 ? 10 : 50 - i * 10);
+      this.addGold(gameRanking.userID, i > 3 ? 10 : 50 - i * 10);
+      this.checkLevel(gameRanking[i].userID);
+    }
+
+    Connection.instance.io.to(this.roomID).emit("game-ended", gameRanking);
   }
 
   async getQuestions() {
@@ -297,6 +321,16 @@ function compareRoundResult(a, b) {
     return -1;
   }
   if (a.points > b.points) {
+    return 1;
+  }
+  return 0;
+}
+
+function compareGameResult(a, b) {
+  if (a < b) {
+    return -1;
+  }
+  if (a > b) {
     return 1;
   }
   return 0;
