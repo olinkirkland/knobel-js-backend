@@ -33,7 +33,6 @@ async function createNewUser(password, isGuest, email) {
     password: Password.encrypt(password), // Encrypt Passwort
     id: id,
     token: JWT.generate(username, email, id), // Generate new Token
-    currentSkin: startSkins[Math.floor(Math.random() * 3)], // Choose random Skin
     experience: 0,
     gold: 0,
     level: 1,
@@ -44,10 +43,14 @@ async function createNewUser(password, isGuest, email) {
     friendRequestsOutgoing: [],
     nameChanges: 0,
     currentAvatar: "oO7GXCjER0DbQioa2Mwqx",
+    currentWallpaper: "nbKnDUBgYwiQcUJjI8gYG",
+    currentSkin: startSkins[Math.floor(Math.random() * 3)], // Choose random Skin
     inventory: [
-      "oO7GXCjER0DbQioa2Mwqx", // Viking
-      "Gpm00ST2s7WypfINoDx4i", // Day of the Dead
-      "LgzPFDYuFg53oV8Q0CnG3" // Corgi
+      "oO7GXCjER0DbQioa2Mwqx", // Viking (Avatar)
+      "Gpm00ST2s7WypfINoDx4i", // Day of the Dead (Avatar)
+      "LgzPFDYuFg53oV8Q0CnG3", // Corgi (Avatar)
+      "nbKnDUBgYwiQcUJjI8gYG", // Prism (Wallpaper)
+      "KgkdXnvuUjgFg9mFsF_o1" // Embroidery (Wallpaper)
     ]
   });
 
@@ -111,7 +114,8 @@ async function updateUser(
   newPassword,
   newSkin,
   newEmail,
-  newAvatar
+  newAvatar,
+  newWallpaper
 ) {
   // Get all Userdata´s from users-Collection, including critical data (like Password)
   const user = await getFullUserById(id);
@@ -152,6 +156,13 @@ async function updateUser(
       await UserSchema.findByIdAndUpdate(
         { _id: id },
         { currentAvatar: newAvatar }
+      );
+    }
+
+    if (newWallpaper) {
+      await UserSchema.findByIdAndUpdate(
+        { _id: id },
+        { currentWallpaper: newWallpaper }
       );
     }
 
