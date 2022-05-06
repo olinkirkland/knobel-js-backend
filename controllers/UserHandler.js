@@ -61,6 +61,10 @@ async function createNewUser(password, isGuest, email) {
   return isGuest ? newUser : "Success";
 }
 
+async function getUserSchemaById(id) {
+  return await UserSchema.findById(id);
+}
+
 async function getFullUserById(id) {
   // Get Userdata from users-Collection without critical data, like Password
 
@@ -120,7 +124,8 @@ async function updateUser(
   newStatus
 ) {
   // Get all Userdata´s from users-Collection, including critical data (like Password)
-  const user = await getFullUserById(id);
+  const userSchema = await getUserSchemaById(id);
+  const user = new User.Full(userSchema);
   let result = "";
 
   // If no User was found, return with Error
@@ -137,7 +142,13 @@ async function updateUser(
 
     if (newPassword) {
       // If User wants to change the Password, the old Pasword is required
-      const check = Password.check(oldPassword, user.password, user.username);
+      const check = Password.check(
+        oldPassword,
+        userSchema.password,
+        user.username
+      );
+
+      console.log(oldPassword, userSchema.password, user.username);
 
       if (check) {
         await UserSchema.findByIdAndUpdate(
@@ -145,7 +156,7 @@ async function updateUser(
           { password: Password.encrypt(newPassword) }
         );
       } else {
-        result = 401;
+        return 401;
       }
     }
 
