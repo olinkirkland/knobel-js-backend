@@ -10,37 +10,81 @@ const UserSchema = require("../models/UserSchema");
 const axios = require("axios");
 const ResourceHandler = require("../controllers/ResourceHandler");
 
+class Mode {
+  static GAME = "mode-game";
+  static LOBBY = "mode-lobby";
+}
+
+class Player {
+  user; // Reference to the user
+  isPlaying; // True: Player is currently playing, False: Player is spectating
+  state;
+}
+
+class PlayerState {
+  coord = { x: 0, y: 0 };
+}
+
 class Game {
   constructor(options) {
-    this.name = options.name;
-    this.roomID = uuidv4();
-    this.hostID = options.hostID;
-    this.password = options.password ? options.password : null;
-    this.maxPlayer = options.maxPlayer;
-    this.players = options.players ? options.players : [];
-    this.spectators = options.spectators ? options.spectators : [];
-    this.gameMode = options.gameMode;
-    this.gameCategory = options.category;
-    this.gameDifficulty = options.difficulty;
-    this.gameRounds = options.rounds ? options.rounds : 10;
-    this.currentRound = 0;
-    this.correctAnswer = -2;
+    this.name = options.name; // Unique name of this game instance
+    this.gameID = uuidv4(); // Unique ID of this game instance
+
+    this.hostID = options.hostID; // UserID of the host user; this user has elevated permissions
+
+    this.password = options.password; // Password is string or null
+    this.maxPlayers = options.maxPlayers; // Maximum number of players allowed
+
+    this.players = []; // Array of current players
+    this.gameMode = Mode.LOBBY; // Current mode of the game
+
+    this.category = options.category;
+    this.difficulty = options.difficulty;
+
+    this.numberOfRounds = options.numberOfRounds ? options.numberOfRounds : 10; // Number of rounds to play
+    this.roundIndex = 0; // Current round index
+    this.answerIndex;
     this.question;
 
     this.timer;
     this.timeoutResults = 0.5; // Round-Results will be shown for this amount of seconds
     this.timeoutQuestion = 0.5; // Questions will be shown for this amount of seconds
 
-    this.addConnectionListeners();
+    // this.addConnectionListeners();
+  }
 
-    console.log("✔️", "Game", `'${this.name}'`, "was created successfully");
+  toLeaflet() {
+    return {
+      gameID: this.gameID,
+      name: this.name,
+      host: UserHandler.getSmallUserById(this.hostID),
+      playerCount: this.players.length,
+      maxPlayers: this.maxPlayers,
+      inProgress: this.gameMode === Mode.GAME
+    };
+  }
+
+  addPlayer(user) {
+    const player = {
+      user: user,
+      isPlaying: false
+    };
+
+    this.players.push(player);
+  }
+
+  removePlayer(userID) {
+    const player = this.players.find((player) => player.user.userID === userID);
+    if (!player) return;
+
+    // Remove the player
+    this.players = this.players.filter((el) => el.userID !== userID);
   }
 
   addConnectionListeners() {
     const connection = Connection.instance;
     connection.on(GameEventType.JOIN, this.onGameJoin.bind(this));
     connection.on(GameEventType.LEAVE, this.onGameLeave.bind(this));
-    connection.on(ConnectionEventType.DISCONNECT, this.onGameLeave.bind(this));
     connection.on(GameEventType.START, this.onGameStart.bind(this));
     connection.on(GameEventType.ANSWER, this.onGameAnswer.bind(this));
     connection.on(GameEventType.SETUP, this.onGameRoundSetup.bind(this));
@@ -111,8 +155,8 @@ class Game {
     }
 
     // Restart the Game with current Settings
-    if (this.currentRound === this.gameRounds) {
-      this.currentRound = 0;
+    if (this.roundIndex === this.numberOfRounds) {
+      this.roundIndex = 0;
       this.players.push(this.spectators);
       this.spectators = [];
       this.players.forEach((player) => {
@@ -129,7 +173,8 @@ class Game {
   async onGameRoundSetup() {
     const question = await this.getQuestions();
     if (question !== "end") {
-      question.lastRound = this.currentRound === this.gameRounds ? true : false;
+      question.lastRound =
+        this.roundIndex === this.numberOfRounds ? true : false;
 
       Connection.instance.io
         .to(this.roomID)
@@ -162,8 +207,7 @@ class Game {
 
     this.players.forEach((player) => {
       player.answered ? null : player.answers.push(6);
-      player.answers &&
-      player.answers[this.currentRound - 1] === this.correctAnswer
+      player.answers && player.answers[this.roundIndex - 1] === this.answerIndex
         ? roundRanking.push({
             userID: player.userID,
             correctAnswer: true,
@@ -231,7 +275,7 @@ class Game {
       ? `&category=${this.getCategoryID(this.category)}`
       : "";
 
-    if (this.currentRound < this.gameRounds) {
+    if (this.roundIndex < this.numberOfRounds) {
       // Build URL from Options
 
       const url = `https://opentdb.com/api.php?amount=1${
@@ -252,19 +296,19 @@ class Game {
 
       question.answers = questionFetch.incorrect_answers;
 
-      this.correctAnswer = Math.floor(
+      this.answerIndex = Math.floor(
         Math.random() * (question.answers.length - 1)
       );
 
       question.answers.splice(
-        this.correctAnswer,
+        this.answerIndex,
         0,
         questionFetch.correct_answer
       );
 
-      console.log("CORRECT", this.correctAnswer);
+      console.log("CORRECT", this.answerIndex);
 
-      this.currentRound++;
+      this.roundIndex++;
       return question;
     } else {
       return "end";

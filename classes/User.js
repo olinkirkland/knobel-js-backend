@@ -50,11 +50,11 @@ class Full extends Medium {
     this.email = data.email;
     this.gold = data.gold;
     this.socketID = data.socketID;
+    this.gameID = data.currentRoom;
     this.nameChanges = data.nameChanges;
     this.currentWallpaper = data.currentWallpaper;
     this.friendRequestsIncoming = data.friendRequestsIncoming;
     this.friendRequestsOutgoing = data.friendRequestsOutgoing;
-    this.currentRoom = data.currentRoom;
     this.inventory = data.inventory;
   }
 }
