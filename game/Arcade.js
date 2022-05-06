@@ -39,10 +39,8 @@ function joinGame(user, gameID) {
 
   // Add user to game
   game.addPlayer(user);
-  Connection.instance
-    .getSocket(user.socketID)
-    .Connection.instance.io.to(gameID)
-    .emit(GameEventType.INVALIDATE);
+  const socket = Connection.getSocket(user.socketID);
+  Connection.instance.io.to(gameID).emit(GameEventType.INVALIDATE);
 
   console.log(`🎮 User ${user.username} joined game ${gameID}`);
   return true;

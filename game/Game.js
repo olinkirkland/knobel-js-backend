@@ -139,7 +139,7 @@ class Game {
     UserSchema.updateOne({ socketID: socketID }, { currentRoom: this.roomID });
 
     // Tell the user they joined the game
-    const socket = Connection.sockets[socketID];
+    const socket = Connection.getSocket(socketID);
 
     socket.join(this.roomID);
 
