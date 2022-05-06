@@ -15,12 +15,13 @@ class ConnectionEventType {
 }
 
 class GameEventType {
-  static JOIN = "game-join"; // Player joined game
-  static START = "game-start"; // Host starts the Game
-  static ANSWER = "game-answer"; // User clicks on Answer
-  static SETUP = "game-round-setup"; // Send information for the current game round, e.g. Questions & Answers
-  static RESULT = "game-round-result"; // Send Results from the Round to FE. Also start next round or goto END
-  static END = "game-ended"; // Send information about the round, e.g. Ranking for the ended Round.
+  static JOIN = "game-join"; // FE -> BE User joined game
+  static JOINED = "game-joined"; // BE -> FE User joined game
+  static START = "game-start"; // FE -> BE Host starts the Game
+  static SETUP = "game-round-setup"; // BE -> FE Send information for the current game round, e.g. Questions
+  static ANSWER = "game-answer"; // FE -> BE User chooses an Answer
+  static RESULT = "game-round-result"; // BE -> FE Send Results from the Round to FE. Also start next round or goto END
+  static END = "game-ended"; // BE -> FE Send information about the round, e.g. Ranking for the ended Round.
 }
 
 class Connection extends EventEmitter {

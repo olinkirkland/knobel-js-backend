@@ -148,8 +148,6 @@ async function updateUser(
         user.username
       );
 
-      console.log(oldPassword, userSchema.password, user.username);
-
       if (check) {
         await UserSchema.findByIdAndUpdate(
           { _id: id },

@@ -32,7 +32,6 @@ router.post("/login", DataValidator.checkEmail, (req, res) => {
     UserHandler.getUserByMail(req.body.email.toLowerCase()).then((response) => {
       if (response.length > 0) {
         const userSchema = response[0];
-        console.log("User found", userSchema);
 
         // check Password with BCrypt and recieve new Token
         const check = Password.check(
