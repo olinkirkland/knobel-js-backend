@@ -26,7 +26,6 @@ class Game {
     this.timeoutResults = 5; // Round-Results will be shown for this amount of seconds
     this.timeoutQuestion = 5; // Questions will be shown for this amount of seconds
 
-    console.log(this.players);
     this.addConnectionListeners();
 
     console.log("✔️", "Game", `'${this.name}'`, "was created successfully");
@@ -74,7 +73,6 @@ class Game {
 
     // Only the host can start the game
     if (user.id !== this.hostID) {
-      console.log(false);
       return;
     }
 
@@ -90,15 +88,11 @@ class Game {
     if (question !== "end") {
       question.lastRound = this.currentRound === this.gameRounds ? true : false;
 
-      console.log(question);
       // Connection.instance.io.to(this.roomID).emit("game-round-setup", question);
       this.players.forEach((player) => {
         player.answered = false;
         Connection.sockets[player.socketID].emit("game-round-setup", question);
       });
-
-      console.log("round", this.currentRound);
-      console.log("answer", this.correctAnswer);
 
       this.timer = setTimeout(
         () => this.onGameResult(),
@@ -113,20 +107,14 @@ class Game {
     const user = new User.Small(await UserHandler.getUserBySocketID(socketID));
 
     console.log("🎮", "User", user.username, "answered");
-    console.log("DATA", data);
 
     if (!this.players.find((el) => el.socketID === socketID).answered) {
-      console.log("PLAYER ANSWERED");
-
       this.players
         .find((el) => el.socketID === socketID)
         .answers.push(parseInt(data));
       this.players.find((el) => el.socketID === socketID).answered = true;
     }
-    console.log(this.players);
   }
-
-  // send game-answer 2
 
   async onGameResult() {
     const roundRanking = [];
