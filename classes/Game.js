@@ -100,7 +100,16 @@ class Game {
       return;
     }
 
-    if (this.currentRound !== 0) this.currentRound = 0; // Restart the Game with current Settings
+    // Restart the Game with current Settings
+    if (this.currentRound !== 0 && this.currentRound === this.gameRounds) {
+      this.currentRound = 0;
+      this.players.push(this.spectators);
+      this.spectators = [];
+      this.players.forEach((player) => {
+        player.gamePoints = [];
+        player.answers = [];
+      });
+    }
 
     console.log("🎮", "Game", `'${this.name}'`, "started");
 
