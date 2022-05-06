@@ -23,6 +23,8 @@ class Game {
     this.question;
 
     this.timer;
+    this.timoutResults = 5; // Round-Results will be shown for this amount of seconds
+    this.timoutQuestion = 5; // Questions will be shown for this amount of seconds
 
     console.log(this.players);
     this.addConnectionListeners();
@@ -81,14 +83,19 @@ class Game {
 
   async onGameRoundSetup() {
     const question = await this.getQuestions();
-    question.lastRound = this.currentRound === this.gameRounds ? true : false;
+    if (question !== "end") {
+      question.lastRound = this.currentRound === this.gameRounds ? true : false;
 
-    // Connection.instance.io.to(this.roomID).emit("game-round-setup", question);
-    this.players.forEach((player) => {
-      Connection.sockets[player.socketID].emit("game-round-setup", question);
-    });
+      console.log(question);
+      // Connection.instance.io.to(this.roomID).emit("game-round-setup", question);
+      this.players.forEach((player) => {
+        Connection.sockets[player.socketID].emit("game-round-setup", question);
+      });
 
-    this.timer = setTimeout(() => this.onGameResult(), 1000 * 5);
+      this.timer = setTimeout(() => this.onGameResult(), 1000 * timoutQuestion);
+    } else {
+      this.onGameEnd();
+    }
   }
 
   async onGameAnswer(socketID, data) {
@@ -106,8 +113,11 @@ class Game {
   async onGameResult() {
     const roundRanking = [];
 
+    console.log("round", this.currentRound);
+
     this.players.forEach((player) =>
-      player.answers && player.answers[this.currentRound] === this.correctAnswer
+      player.answers &&
+      player.answers[this.currentRound - 1] === this.correctAnswer
         ? roundRanking.push({
             userID: player.userID,
             correctAnswer: true,
@@ -142,6 +152,8 @@ class Game {
       });
     });
 
+    setTimeout(() => this.onGameRoundSetup(), 1000 * this.timoutResults);
+
     // Connection.instance.io.to(this.roomID).emit("game-round-result", {
     //   correctAnswer: this.question.correct_answer,
     //   roundRanking: roundRanking
@@ -167,7 +179,10 @@ class Game {
       this.checkLevel(gameRanking[i].userID);
     }
 
-    Connection.instance.io.to(this.roomID).emit("game-ended", gameRanking);
+    // Connection.instance.io.to(this.roomID).emit("game-ended", gameRanking);
+    this.players.forEach((player) => {
+      Connection.sockets[player.socketID].emit("game-ended", gameRanking);
+    });
   }
 
   async getQuestions() {
@@ -198,13 +213,6 @@ class Game {
 
       question.answers = questionFetch.incorrect_answers;
 
-      console.log(question.answers);
-
-      console.log(
-        "RANDOM",
-        Math.floor(Math.random() * (question.answers.length - 1))
-      );
-
       this.correctAnswer = Math.floor(
         Math.random() * (question.answers.length - 1)
       );
@@ -220,7 +228,7 @@ class Game {
       this.currentRound++;
       return question;
     } else {
-      return false;
+      return "end";
     }
   }
 
