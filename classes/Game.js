@@ -20,7 +20,11 @@ class Game {
     this.gameRounds = options.rounds ? options.rounds : 10;
     this.currentRound = 0;
     this.correctAnswer = -2;
+    this.question;
 
+    this.timer;
+
+    console.log(this.players);
     this.addConnectionListeners();
 
     console.log("✔️", "Game", `'${this.name}'`, "was created successfully");
@@ -63,34 +67,47 @@ class Game {
     const user = new User.Full(await UserHandler.getUserBySocketID(socketID));
 
     // Only the host can start the game
-    if (user.id !== this.hostID) return;
+    if (user.id !== this.hostID) {
+      console.log(false);
+      return;
+    }
 
     console.log("🎮", "Game", `'${this.name}'`, "started");
 
-    Connection.instance.io.to(this.roomID).emit("game-start");
+    this.onGameRoundSetup();
+
+    // Connection.instance.io.to(this.roomID).emit("game-start-in");
   }
 
   async onGameRoundSetup() {
     const question = await this.getQuestions();
     question.lastRound = this.currentRound === this.gameRounds ? true : false;
 
-    Connection.instance.io.to(this.roomID).emit("game-round-setup", question);
+    // Connection.instance.io.to(this.roomID).emit("game-round-setup", question);
+    this.players.forEach((player) => {
+      Connection.sockets[player.socketID].emit("game-round-setup", question);
+    });
+
+    this.timer = setTimeout(() => this.onGameResult(), 1000 * 5);
   }
 
   async onGameAnswer(socketID, data) {
     const user = new User.Small(await UserHandler.getUserBySocketID(socketID));
 
     console.log("🎮", "User", user.username, "answered");
-    console.log(JSON.stringify(data));
+    console.log("DATA", data);
 
-    this.players.find((el) => el.socketID === socketID).answers.push(answer);
+    this.players
+      .find((el) => el.socketID === socketID)
+      .answers.push(parseInt(data.answer));
+    console.log(this.players);
   }
 
   async onGameResult() {
     const roundRanking = [];
 
     this.players.forEach((player) =>
-      answers[this.currentRound] === this.correctAnswer
+      player.answers && player.answers[this.currentRound] === this.correctAnswer
         ? roundRanking.push({
             userID: player.userID,
             correctAnswer: true,
@@ -118,10 +135,17 @@ class Game {
 
     roundRanking.sort(compareRoundResult);
 
-    Connection.instance.io.to(this.roomID).emit("game-round-result", {
-      correctAnswer: this.question.correct_answer,
-      roundRanking: roundRanking
+    this.players.forEach((player) => {
+      Connection.sockets[player.socketID].emit("game-round-result", {
+        correctAnswer: this.question.correct_answer,
+        roundRanking: roundRanking
+      });
     });
+
+    // Connection.instance.io.to(this.roomID).emit("game-round-result", {
+    //   correctAnswer: this.question.correct_answer,
+    //   roundRanking: roundRanking
+    // });
   }
 
   async onGameEnd() {
@@ -170,11 +194,28 @@ class Game {
         answers: []
       };
 
+      this.question = questionFetch;
+
       question.answers = questionFetch.incorrect_answers;
 
-      this.correctAnswer = Math.floor(Math.random() * (question.answers - 1));
+      console.log(question.answers);
 
-      question.answers.splice(random, 0, questionFetch.correct_answer);
+      console.log(
+        "RANDOM",
+        Math.floor(Math.random() * (question.answers.length - 1))
+      );
+
+      this.correctAnswer = Math.floor(
+        Math.random() * (question.answers.length - 1)
+      );
+
+      question.answers.splice(
+        this.correctAnswer,
+        0,
+        questionFetch.correct_answer
+      );
+
+      console.log("CORRECT", this.correctAnswer);
 
       this.currentRound++;
       return question;

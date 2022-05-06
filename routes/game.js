@@ -29,17 +29,17 @@ router.get("/categories", JWT.check, (req, res) => {
 router.post("/host", JWT.check, async (req, res) => {
   const options = req.body;
   const host = await UserHandler.getFullUserById(options.hostID);
-  options.players = [
-    {
-      userID: host.id,
-      socketID: host.socketID,
-      username: host.username,
-      level: host.level,
-      experience: host.experience,
-      gamePoints: [],
-      answers: []
-    }
-  ];
+  // options.players = [
+  //   {
+  //     userID: host.id,
+  //     socketID: host.socketID,
+  //     username: host.username,
+  //     level: host.level,
+  //     experience: host.experience,
+  //     gamePoints: [],
+  //     answers: []
+  //   }
+  // ];
 
   console.log(
     "🎮",
