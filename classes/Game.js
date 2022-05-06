@@ -23,8 +23,8 @@ class Game {
     this.question;
 
     this.timer;
-    this.timoutResults = 5; // Round-Results will be shown for this amount of seconds
-    this.timoutQuestion = 5; // Questions will be shown for this amount of seconds
+    this.timeoutResults = 5; // Round-Results will be shown for this amount of seconds
+    this.timeoutQuestion = 5; // Questions will be shown for this amount of seconds
 
     console.log(this.players);
     this.addConnectionListeners();
@@ -62,9 +62,9 @@ class Game {
     UserSchema.updateOne({ socketID: socketID }, { currentRoom: this.roomID });
 
     // Tell the user they joined the game
-    const socket = Connection.sockets[socketID]
-    
-    socket.join(roomID);
+    const socket = Connection.sockets[socketID];
+
+    socket.join(this.roomID);
 
     socket.emit("game-join-success", data);
   }
@@ -96,7 +96,10 @@ class Game {
         Connection.sockets[player.socketID].emit("game-round-setup", question);
       });
 
-      this.timer = setTimeout(() => this.onGameResult(), 1000 * timoutQuestion);
+      this.timer = setTimeout(
+        () => this.onGameResult(),
+        1000 * this.timeoutQuestion
+      );
     } else {
       this.onGameEnd();
     }
@@ -113,6 +116,8 @@ class Game {
       .answers.push(parseInt(data));
     console.log(this.players);
   }
+
+  // send game-answer 2
 
   async onGameResult() {
     const roundRanking = [];
@@ -156,7 +161,7 @@ class Game {
       });
     });
 
-    setTimeout(() => this.onGameRoundSetup(), 1000 * this.timoutResults);
+    setTimeout(() => this.onGameRoundSetup(), 1000 * this.timeoutResults);
 
     // Connection.instance.io.to(this.roomID).emit("game-round-result", {
     //   correctAnswer: this.question.correct_answer,
