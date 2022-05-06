@@ -4,6 +4,7 @@ const UserHandler = require("../controllers/UserHandler");
 const User = require("../classes/User");
 const UserSchema = require("../models/UserSchema");
 const axios = require("axios");
+const ResourceHandler = require("../controllers/ResourceHandler");
 
 class Game {
   constructor(options) {
@@ -182,8 +183,11 @@ class Game {
     );
 
     for (let i = 0; i < gameRanking; i++) {
-      this.addExperience(gameRanking.userID, i > 3 ? 10 : 50 - i * 10);
-      this.addGold(gameRanking.userID, i > 3 ? 10 : 50 - i * 10);
+      ResourceHandler.giveExperience(
+        gameRanking[i].userID,
+        i > 3 ? 10 : 50 - i * 10
+      );
+      ResourceHandler.giveGold(gameRanking[i].userID, i > 3 ? 10 : 50 - i * 10);
       this.checkLevel(gameRanking[i].userID);
     }
 
