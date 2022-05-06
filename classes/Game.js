@@ -65,7 +65,9 @@ class Game {
 
     socket.join(this.roomID);
 
-    socket.emit("game-join-success", data);
+    Connection.instance.io
+      .to(this.roomID)
+      .emit(GameEventType.JOINED, { userID: user.id });
   }
 
   async onGameStart(socketID) {
