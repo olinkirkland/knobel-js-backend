@@ -100,6 +100,8 @@ class Game {
       return;
     }
 
+    if (this.currentRound !== 0) this.currentRound = 0; // Restart the Game with current Settings
+
     console.log("🎮", "Game", `'${this.name}'`, "started");
 
     this.onGameRoundSetup();
@@ -248,57 +250,6 @@ class Game {
     } else {
       return "end";
     }
-  }
-
-  async checkLevel(userID) {
-    let user = await UserHandler.getFullUserById(userID);
-    let requiredXP = 100 + ((user.level / 7) ^ 2);
-    let lvlUp = true;
-
-    if (user.experience >= requiredXP) {
-      do {
-        user.level++;
-        user.experience = user.experience - requiredXP;
-        requiredXP = (100 + user.level / 7) ^ 2;
-        lvlUp = user.experience >= requiredXP ? true : false;
-      } while (lvlUp);
-
-      UserSchema.findByIdAndUpdate(
-        { _id: userID },
-        { level: user.level, experience: user.experience }
-      ).catch((err) => console.log(err));
-
-      return 228;
-    } else {
-      return 227;
-    }
-  }
-
-  async addExperience(userID, experience) {
-    let error = null;
-
-    await UserSchema.findByIdAndUpdate(
-      { _id: userID },
-      { experience: experience }
-    ).catch((err) => {
-      console.log("AddXP-Error: ", err);
-      error = 512;
-    });
-
-    return error !== null ? error : checkLevel(userID);
-  }
-
-  async addGold(userID, gold) {
-    let error = null;
-
-    await UserSchema.findByIdAndUpdate({ _id: userID }, { gold: gold }).catch(
-      (err) => {
-        console.log("AddGold-Error: ", err);
-        error = 512;
-      }
-    );
-
-    return error !== null ? error : 201;
   }
 
   getCategoryID(category) {
