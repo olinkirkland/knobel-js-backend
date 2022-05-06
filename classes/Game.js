@@ -24,8 +24,8 @@ class Game {
     this.question;
 
     this.timer;
-    this.timeoutResults = 5; // Round-Results will be shown for this amount of seconds
-    this.timeoutQuestion = 5; // Questions will be shown for this amount of seconds
+    this.timeoutResults = 0.5; // Round-Results will be shown for this amount of seconds
+    this.timeoutQuestion = 0.5; // Questions will be shown for this amount of seconds
 
     this.addConnectionListeners();
 
@@ -82,8 +82,6 @@ class Game {
     console.log("🎮", "Game", `'${this.name}'`, "started");
 
     this.onGameRoundSetup();
-
-    // Connection.instance.io.to(this.roomID).emit("game-start-in");
   }
 
   async onGameRoundSetup() {
@@ -91,11 +89,9 @@ class Game {
     if (question !== "end") {
       question.lastRound = this.currentRound === this.gameRounds ? true : false;
 
-      // Connection.instance.io.to(this.roomID).emit("game-round-setup", question);
-      this.players.forEach((player) => {
-        player.answered = false;
-        Connection.sockets[player.socketID].emit("game-round-setup", question);
-      });
+      Connection.instance.io
+        .to(this.roomID)
+        .emit(GameEventType.SETUP, question);
 
       this.timer = setTimeout(
         () => this.onGameResult(),
@@ -153,24 +149,15 @@ class Game {
 
     roundRanking.sort(compareRoundResult);
 
-    this.players.forEach((player) => {
-      Connection.sockets[player.socketID].emit("game-round-result", {
-        correctAnswer: this.question.correct_answer,
-        roundRanking: roundRanking
-      });
+    Connection.instance.io.to(this.roomID).emit(GameEventType.RESULT, {
+      correctAnswer: this.question.correct_answer,
+      roundRanking: roundRanking
     });
 
     setTimeout(() => this.onGameRoundSetup(), 1000 * this.timeoutResults);
-
-    // Connection.instance.io.to(this.roomID).emit("game-round-result", {
-    //   correctAnswer: this.question.correct_answer,
-    //   roundRanking: roundRanking
-    // });
   }
 
   async onGameEnd() {
-    this.players[1].gamePoints = [0, 0, 0, 0, 0, 50, 0, 0, 0, 50];
-
     this.players.forEach((player) => {
       player.gamePoints = player.gamePoints.reduce((pv, cv) => pv + cv, 0);
     });
@@ -190,13 +177,9 @@ class Game {
         i > 3 ? 10 : 50 - i * 10
       );
       ResourceHandler.giveGold(gameRanking[i].userID, i > 3 ? 10 : 50 - i * 10);
-      this.checkLevel(gameRanking[i].userID);
     }
 
-    // Connection.instance.io.to(this.roomID).emit("game-ended", gameRanking);
-    this.players.forEach((player) => {
-      Connection.sockets[player.socketID].emit("game-ended", gameRanking);
-    });
+    Connection.instance.io.to(this.roomID).emit(GameEventType.END, gameRanking);
   }
 
   async getQuestions() {
