@@ -106,7 +106,7 @@ class Game {
 
     this.players
       .find((el) => el.socketID === socketID)
-      .answers.push(parseInt(data.answer));
+      .answers.push(parseInt(data));
     console.log(this.players);
   }
 
