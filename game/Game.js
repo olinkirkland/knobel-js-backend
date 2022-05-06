@@ -96,11 +96,12 @@ class Game {
     this.players.push(player);
   }
 
-  removePlayer(userID) {
-    const player = this.players.find((player) => player.user.userID === userID);
+  removePlayer(user) {
+    const player = this.players.find((p) => p.user.id === user.id);
+
     if (!player) return;
 
-    player.user.gameID = "";
+    user.gameID = "";
     UserHandler.getUserSchemaById(user.id).then((userSchema) => {
       userSchema.currentRoom = "";
       userSchema.save();
@@ -109,7 +110,7 @@ class Game {
     player.socket.leave(this.gameID);
 
     // Remove the player
-    this.players = this.players.filter((el) => el.userID !== userID);
+    this.players = this.players.filter((p) => p.user.id !== user.id);
   }
 
   broadcast(event, data) {
