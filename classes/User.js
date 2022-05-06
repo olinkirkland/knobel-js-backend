@@ -39,6 +39,7 @@ class Medium extends Small {
     this.experience = data.experience;
     this.skins = data.skins;
     this.friends = data.friends;
+    this.status = data.status;
   }
 }
 

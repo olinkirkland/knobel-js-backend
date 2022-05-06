@@ -51,13 +51,18 @@ async function createNewUser(password, isGuest, email) {
       "LgzPFDYuFg53oV8Q0CnG3", // Corgi (Avatar)
       "nbKnDUBgYwiQcUJjI8gYG", // Prism (Wallpaper)
       "KgkdXnvuUjgFg9mFsF_o1" // Embroidery (Wallpaper)
-    ]
+    ],
+    status: "Guests like to keep their secrets..."
   });
 
   await newUser.save();
 
   // If User is a Guest, return the User-Object. Else return "Success" for Registration
   return isGuest ? newUser : "Success";
+}
+
+async function getUserSchemaById(id) {
+  return await UserSchema.findById(id);
 }
 
 async function getFullUserById(id) {
@@ -115,10 +120,12 @@ async function updateUser(
   newSkin,
   newEmail,
   newAvatar,
-  newWallpaper
+  newWallpaper,
+  newStatus
 ) {
   // Get all Userdata´s from users-Collection, including critical data (like Password)
-  const user = await getFullUserById(id);
+  const userSchema = await getUserSchemaById(id);
+  const user = new User.Full(userSchema);
   let result = "";
 
   // If no User was found, return with Error
@@ -135,7 +142,13 @@ async function updateUser(
 
     if (newPassword) {
       // If User wants to change the Password, the old Pasword is required
-      const check = Password.check(oldPassword, user.password, user.username);
+      const check = Password.check(
+        oldPassword,
+        userSchema.password,
+        user.username
+      );
+
+      console.log(oldPassword, userSchema.password, user.username);
 
       if (check) {
         await UserSchema.findByIdAndUpdate(
@@ -143,7 +156,7 @@ async function updateUser(
           { password: Password.encrypt(newPassword) }
         );
       } else {
-        result = 401;
+        return 401;
       }
     }
 
@@ -166,17 +179,26 @@ async function updateUser(
       );
     }
 
+    if (newStatus) {
+      await UserSchema.findByIdAndUpdate({ _id: id }, { status: newStatus });
+    }
+
     if (newEmail) {
       // If User wants to change the Email, a Pasword is required
-      const check = Password.check(oldPassword, user.password, user.username);
+      const check = Password.check(
+        oldPassword,
+        userSchema.password,
+        user.username
+      );
 
       if (check) {
         await UserSchema.findByIdAndUpdate(
           { _id: id },
           { email: newEmail.toLowerCase() }
         );
+        console.log("user", user.username, "changed their Email to", newEmail);
       } else {
-        result = 400;
+        return 400;
       }
     }
   }
