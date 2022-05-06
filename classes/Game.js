@@ -62,7 +62,11 @@ class Game {
     UserSchema.updateOne({ socketID: socketID }, { currentRoom: this.roomID });
 
     // Tell the user they joined the game
-    Connection.sockets[socketID].emit("game-join-success", data);
+    const socket = Connection.sockets[socketID]
+    
+    socket.join(roomID);
+
+    socket.emit("game-join-success", data);
   }
 
   async onGameStart(socketID) {
