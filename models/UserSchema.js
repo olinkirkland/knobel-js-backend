@@ -75,6 +75,10 @@ const userSchema = new Schema({
     required: true,
     type: String,
   },
+  currentWallpaper: {
+    required: true,
+    type: String,
+  },
   inventory: {
     type: Array,
     required: true,

@@ -11,7 +11,6 @@ const UserHandler = require("../controllers/UserHandler");
 const { Connection } = require("../controllers/Connection");
 
 router.post("/login", DataValidator.checkEmail, (req, res) => {
-  console.log("👤", req.body);
   if (req.body.isGuest) {
     // Create new Guest with Standard PW and Email in DB
     UserHandler.createNewUser("123", true, "GUEST@GUEST.de").then((result) => {
@@ -58,7 +57,7 @@ router.post("/login", DataValidator.checkEmail, (req, res) => {
               cookieContent.token,
               cookieContent.options
             );
-            res.send(user);
+            res.send(user.id);
           });
         } else {
           // If Password is incorrect
@@ -126,7 +125,8 @@ router.post("/update", JWT.check, (req, res) => {
     req.body.newPassword,
     req.body.newSkin,
     req.body.newEmail,
-    req.body.newAvatar
+    req.body.newAvatar,
+    req.body.newWallpaper
   ).then((response) => {
     // Respond with true or false to Frontend, depending on Success
     if (response !== 401 || response !== 400) {
