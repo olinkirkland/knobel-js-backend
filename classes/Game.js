@@ -93,8 +93,12 @@ class Game {
       console.log(question);
       // Connection.instance.io.to(this.roomID).emit("game-round-setup", question);
       this.players.forEach((player) => {
+        player.answered = false;
         Connection.sockets[player.socketID].emit("game-round-setup", question);
       });
+
+      console.log("round", this.currentRound);
+      console.log("answer", this.correctAnswer);
 
       this.timer = setTimeout(
         () => this.onGameResult(),
@@ -111,9 +115,14 @@ class Game {
     console.log("🎮", "User", user.username, "answered");
     console.log("DATA", data);
 
-    this.players
-      .find((el) => el.socketID === socketID)
-      .answers.push(parseInt(data));
+    if (!this.players.find((el) => el.socketID === socketID).answered) {
+      console.log("PLAYER ANSWERED");
+
+      this.players
+        .find((el) => el.socketID === socketID)
+        .answers.push(parseInt(data));
+      this.players.find((el) => el.socketID === socketID).answered = true;
+    }
     console.log(this.players);
   }
 
@@ -122,9 +131,8 @@ class Game {
   async onGameResult() {
     const roundRanking = [];
 
-    console.log("round", this.currentRound);
-
-    this.players.forEach((player) =>
+    this.players.forEach((player) => {
+      player.answered ? null : player.answers.push(6);
       player.answers &&
       player.answers[this.currentRound - 1] === this.correctAnswer
         ? roundRanking.push({
@@ -136,8 +144,8 @@ class Game {
             userID: player.userID,
             correctAnswer: false,
             points: 0
-          })
-    );
+          });
+    });
 
     for (let i = 0; i < roundRanking.length; i++) {
       roundRanking[i].correctAnswer
@@ -170,17 +178,20 @@ class Game {
   }
 
   async onGameEnd() {
+    this.players[1].gamePoints = [0, 0, 0, 0, 0, 50, 0, 0, 0, 50];
+
     this.players.forEach((player) => {
-      for (let i = 1; i < player.gamePoints; i++) {
-        player.gamePoints[0] = player.gamePoints[0] + player.gamePoints[i];
-      }
+      player.gamePoints = player.gamePoints.reduce((pv, cv) => pv + cv, 0);
     });
 
     const gameRanking = this.players.map((player) => {
-      return { userID: player.userID, points: player.gamePoints[0] };
+      return { userID: player.userID, points: player.gamePoints };
     });
 
-    gameRanking.sort(compareGameResult);
+    // gameRanking.sort(compareGameResult);
+    gameRanking.sort((a, b) =>
+      a.points < b.points ? 1 : b.points < a.points ? -1 : 0
+    );
 
     for (let i = 0; i < gameRanking; i++) {
       this.addExperience(gameRanking.userID, i > 3 ? 10 : 50 - i * 10);
