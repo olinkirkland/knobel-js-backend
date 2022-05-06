@@ -85,7 +85,13 @@ class Game {
     };
 
     user.gameID = this.gameID;
-    player.socket.join(this.roomID);
+
+    UserHandler.getUserSchemaById(user.id).then((userSchema) => {
+      userSchema.currentRoom = this.gameID;
+      userSchema.save();
+    });
+
+    player.socket.join(this.gameID);
 
     this.players.push(player);
   }
@@ -95,7 +101,12 @@ class Game {
     if (!player) return;
 
     player.user.gameID = "";
-    player.socket.leave(this.roomID);
+    UserHandler.getUserSchemaById(user.id).then((userSchema) => {
+      userSchema.currentRoom = "";
+      userSchema.save();
+    });
+
+    player.socket.leave(this.gameID);
 
     // Remove the player
     this.players = this.players.filter((el) => el.userID !== userID);
@@ -116,8 +127,8 @@ class Game {
     connection.on(GameEventType.END, this.onGameEnd.bind(this));
   }
 
-  async onGameJoin(socketID, roomID) {
-    if (roomID !== this.roomID) return;
+  async onGameJoin(socketID, gameID) {
+    if (gameID !== this.gameID) return;
 
     const user = new User.Full(await UserHandler.getUserBySocketID(socketID));
 

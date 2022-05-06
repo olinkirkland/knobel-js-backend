@@ -1,7 +1,23 @@
-const { Connection, GameEventType } = require("../controllers/Connection");
+const {
+  Connection,
+  GameEventType,
+  ConnectionEventType
+} = require("../controllers/Connection");
+const { getUserBySocketID } = require("../controllers/UserHandler");
 const Game = require("./Game");
 
 const games = [];
+
+Connection.instance.on(ConnectionEventType.DISCONNECT, (socketID, data) => {
+  // A user disconnected, remove them from any game they are in
+  const user = getUserBySocketID(socketID);
+  if (user.gameID) {
+    const game = games.find((game) => game.id === user.gameID);
+    if (game) {
+      game.removeUser(user);
+    }
+  }
+});
 
 function hostGame(user, gameOptions) {
   console.log(`🎮 ${user.username} is creating game '${gameOptions.name}' ...`);
@@ -22,7 +38,7 @@ function hostGame(user, gameOptions) {
   games.push(game);
 
   console.log(`✔️ Game '${gameOptions.name}' was created`);
-  return true;
+  return game.gameID;
 }
 
 function joinGame(user, gameID) {

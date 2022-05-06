@@ -6,6 +6,7 @@ class User {
     this.email = userSchema.email; // The user's email address
     this.isGuest = userSchema.isGuest; // Whether the user is a guest or not
     this.socketID = userSchema.socketID; // The user's socket ID
+    this.gameID = userSchema.currentRoom; // The user's current game
 
     // Customizations
     this.currentSkin = userSchema.currentSkin; // The user's current skin

@@ -348,6 +348,7 @@ async function changeSocketRoom(user, partner) {
 
 module.exports = {
   createNewUser,
+  getUserSchemaById,
   getUserById,
   getFullUserById,
   getMediumUserById,

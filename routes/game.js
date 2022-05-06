@@ -15,9 +15,9 @@ router.post("/host", JWT.check, async (req, res) => {
   const user = await UserHandler.getUserById(req.body.userID);
   const gameOptions = req.body.gameOptions;
 
-  Arcade.hostGame(user, gameOptions)
-    ? res.status(200).send("Game created")
-    : res.status(500).send("Error creating game");
+  const gameID = Arcade.hostGame(user, gameOptions);
+  if (gameID) res.status(200).send(gameID);
+  else res.status(500).send("Error creating game");
 });
 
 router.post("/join", JWT.check, async (req, res) => {
