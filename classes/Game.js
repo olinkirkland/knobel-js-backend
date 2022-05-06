@@ -35,6 +35,7 @@ class Game {
   addConnectionListeners() {
     const connection = Connection.instance;
     connection.on(GameEventType.JOIN, this.onGameJoin.bind(this));
+    connection.on(GameEventType.LEAVE, this.onGameLeave.bind(this));
     connection.on(GameEventType.START, this.onGameStart.bind(this));
     connection.on(GameEventType.ANSWER, this.onGameAnswer.bind(this));
     connection.on(GameEventType.SETUP, this.onGameRoundSetup.bind(this));
@@ -42,7 +43,9 @@ class Game {
     connection.on(GameEventType.END, this.onGameEnd.bind(this));
   }
 
-  async onGameJoin(socketID, data) {
+  async onGameJoin(socketID, roomID) {
+    if (roomID !== this.roomID) return;
+
     const user = new User.Full(await UserHandler.getUserBySocketID(socketID));
 
     const player = {
@@ -66,9 +69,27 @@ class Game {
 
     socket.join(this.roomID);
 
-    Connection.instance.io
-      .to(this.roomID)
-      .emit(GameEventType.JOINED, { userID: user.id });
+    Connection.instance.io.to(this.roomID).emit(GameEventType.JOINED, {
+      userID: user.id,
+      gameID: this.roomID,
+      playerIDs: this.players.map((el) => el.userID)
+    });
+  }
+
+  async onGameLeave(socketID) {
+    const user = new User.Full(await UserHandler.getUserBySocketID(socketID));
+
+    console.log("🎮", user.username, "left game", `'${this.roomID}'`);
+
+    // Remove player with userID == user.id from players
+    this.players = this.players.filter((el) => el.userID !== user.id);
+
+    Connection.sockets[socketID].leave(this.roomID);
+
+    Connection.instance.io.to(this.roomID).emit(GameEventType.LEFT, {
+      userID: user.id,
+      playerIDs: this.players.map((el) => el.userID)
+    });
   }
 
   async onGameStart(socketID) {

@@ -17,6 +17,8 @@ class ConnectionEventType {
 class GameEventType {
   static JOIN = "game-join"; // FE -> BE User joined game
   static JOINED = "game-joined"; // BE -> FE User joined game
+  static LEAVE = "game-leave"; // FE -> BE User left game
+  static LEFT = "game-left"; // BE -> FE User left game
   static START = "game-start"; // FE -> BE Host starts the Game
   static SETUP = "game-round-setup"; // BE -> FE Send information for the current game round, e.g. Questions
   static ANSWER = "game-answer"; // FE -> BE User chooses an Answer

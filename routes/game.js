@@ -51,13 +51,14 @@ router.post("/host", JWT.check, async (req, res) => {
   );
 
   if (currentGames.find((el) => el.name === options.name)?.name) {
+    // Error!
     res.status(400).send("Name is unavailable");
     console.log("Game name", `'${options.name}'`, "is unavailable");
   } else {
-    const newGame = new Game(options);
-    currentGames.push(newGame);
-
-    res.status(201).send(newGame);
+    // Success!
+    const game = new Game(options);
+    currentGames.push(game);
+    res.status(201).send(game);
   }
 });
 
