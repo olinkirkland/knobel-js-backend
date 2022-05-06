@@ -185,15 +185,20 @@ async function updateUser(
 
     if (newEmail) {
       // If User wants to change the Email, a Pasword is required
-      const check = Password.check(oldPassword, user.password, user.username);
+      const check = Password.check(
+        oldPassword,
+        userSchema.password,
+        user.username
+      );
 
       if (check) {
         await UserSchema.findByIdAndUpdate(
           { _id: id },
           { email: newEmail.toLowerCase() }
         );
+        console.log("user", user.username, "changed their Email to", newEmail);
       } else {
-        result = 400;
+        return 400;
       }
     }
   }
