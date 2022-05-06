@@ -26,11 +26,11 @@ class PlayerState {
 }
 
 class Game {
-  constructor(options) {
+  constructor(options, hostUser) {
     this.name = options.name; // Unique name of this game instance
     this.gameID = uuidv4(); // Unique ID of this game instance
 
-    this.hostID = options.hostID; // UserID of the host user; this user has elevated permissions
+    this.hostUser = hostUser; // Reference to the host user
 
     this.password = options.password; // Password is string or null
     this.maxPlayers = options.maxPlayers; // Maximum number of players allowed
@@ -51,24 +51,41 @@ class Game {
     this.timeoutQuestion = 0.5; // Questions will be shown for this amount of seconds
 
     // this.addConnectionListeners();
+
+    // Test
+    setInterval(() => {
+      this.broadcast(GameEventType.INVALIDATE);
+    }, 5000);
   }
 
-  toLeaflet() {
+  toListItem() {
+    // Return a small object with the game's data intended to be displayed in a list of games
     return {
       gameID: this.gameID,
       name: this.name,
-      host: UserHandler.getSmallUserById(this.hostID),
+      host: this.hostUser.toPlayerData(),
       playerCount: this.players.length,
       maxPlayers: this.maxPlayers,
       inProgress: this.gameMode === Mode.GAME
     };
   }
 
+  toGameState() {
+    // Return a small object with the game's data representing the full game state
+    return {
+      ...leaflet
+    };
+  }
+
   addPlayer(user) {
     const player = {
       user: user,
-      isPlaying: false
+      isPlaying: false,
+      socket: Connection.getSocket(user.socketID)
     };
+
+    user.gameID = this.gameID;
+    player.socket.join(this.roomID);
 
     this.players.push(player);
   }
@@ -77,8 +94,15 @@ class Game {
     const player = this.players.find((player) => player.user.userID === userID);
     if (!player) return;
 
+    player.user.gameID = "";
+    player.socket.leave(this.roomID);
+
     // Remove the player
     this.players = this.players.filter((el) => el.userID !== userID);
+  }
+
+  broadcast(event, data) {
+    Connection.instance.io.to(this.gameID).emit(event, data);
   }
 
   addConnectionListeners() {

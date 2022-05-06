@@ -7,11 +7,12 @@ const UserHandler = require("../controllers/UserHandler");
 const Arcade = require("../game/Arcade");
 
 router.get("/list", (req, res) => {
-  res.send(Arcade.games.map((game) => game.toLeaflet()));
+  res.send(Arcade.games.map((game) => game.toListItem()));
 });
 
 router.post("/host", JWT.check, async (req, res) => {
-  const user = await UserHandler.getFullUserById(req.body.userID);
+  console.log(req.body);
+  const user = await UserHandler.getUserById(req.body.userID);
   const gameOptions = req.body.gameOptions;
 
   Arcade.hostGame(user, gameOptions)
@@ -20,7 +21,7 @@ router.post("/host", JWT.check, async (req, res) => {
 });
 
 router.post("/join", JWT.check, async (req, res) => {
-  const user = await UserHandler.getFullUserById(req.body.userID);
+  const user = await UserHandler.getUserById(req.body.userID);
   const gameID = req.body.gameID;
 
   Arcade.joinGame(user, gameID)
@@ -29,7 +30,7 @@ router.post("/join", JWT.check, async (req, res) => {
 });
 
 router.post("/leave", JWT.check, async (req, res) => {
-  const user = await UserHandler.getFullUserById(req.body.userID);
+  const user = await UserHandler.getUserById(req.body.userID);
 
   Arcade.leaveGame(user)
     ? res.status(200).send("Game left")

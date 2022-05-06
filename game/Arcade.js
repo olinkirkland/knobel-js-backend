@@ -18,10 +18,10 @@ function hostGame(user, gameOptions) {
     return false;
   }
 
-  const game = new Game(gameOptions);
+  const game = new Game(gameOptions, user);
   games.push(game);
 
-  console.log(`🎮 Game '${gameOptions.name}' was created`);
+  console.log(`✔️ Game '${gameOptions.name}' was created`);
   return true;
 }
 
@@ -34,13 +34,15 @@ function joinGame(user, gameID) {
     return false;
   }
 
-  const game = getGame(gameID);
-  if (!game) return;
+  const game = getGameByID(gameID);
+  if (!game) return false;
 
   // Add user to game
-  game.addUser(user);
-
-  Connection.instance.io.to(gameID).emit(GameEventType.INVALIDATE);
+  game.addPlayer(user);
+  Connection.instance
+    .getSocket(user.socketID)
+    .Connection.instance.io.to(gameID)
+    .emit(GameEventType.INVALIDATE);
 
   console.log(`🎮 User ${user.username} joined game ${gameID}`);
   return true;
@@ -56,17 +58,17 @@ function leaveGame(user) {
   }
 
   // Broadcast to game room
-  const game = getGame(user.gameID);
+  const game = getGameByID(user.gameID);
   if (!game) return false;
 
-  user.gameID = null;
+  game.removePlayer(user);
 
   console.log(`🎮 User ${user.username} left game ${user.gameID}`);
   return true;
 }
 
-function getGame(gameID) {
-  return games.find((game) => game.id === gameID);
+function getGameByID(gameID) {
+  return games.find((game) => game.gameID === gameID);
 }
 
 function getGameByName(gameName) {
@@ -77,6 +79,6 @@ module.exports = {
   hostGame,
   joinGame,
   leaveGame,
-  getGame,
+  getGame: getGameByID,
   games
 };

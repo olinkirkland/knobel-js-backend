@@ -4,7 +4,7 @@ const Password = require("../controllers/Password");
 
 const UserSchema = require("../models/UserSchema");
 const CurrentlyOnlineSchema = require("../models/CurrentlyOnlineSchema");
-const User = require("../classes/User");
+const { User, Small, Medium, Full } = require("../classes/User");
 const FriendsSchema = require("../models/FriendsSchema");
 
 const randomUserName = require("../classes/randomUsername");
@@ -65,13 +65,18 @@ async function getUserSchemaById(id) {
   return await UserSchema.findById(id);
 }
 
+async function getUserById(id) {
+  const userSchema = await getUserSchemaById(id);
+  return new User(userSchema);
+}
+
 async function getFullUserById(id) {
   // Get Userdata from users-Collection without critical data, like Password
 
   const user = await UserSchema.findById(id).catch(() => "Error");
   return user === "Error" || user === null
     ? "Error: ID invalid!"
-    : new User.Full(user);
+    : new Full(user);
 }
 
 async function getMediumUserById(id) {
@@ -80,7 +85,7 @@ async function getMediumUserById(id) {
   const user = await UserSchema.findById(id).catch(() => "Error");
   return user === "Error" || user === null
     ? "Error: ID invalid!"
-    : new User.Medium(user);
+    : new Medium(user);
 }
 
 async function getSmallUserById(id) {
@@ -89,7 +94,7 @@ async function getSmallUserById(id) {
   const user = await UserSchema.findById(id).catch(() => "Error");
   return user === "Error" || user === null
     ? "Error: ID invalid!"
-    : new User.Small(user);
+    : new Small(user);
 }
 
 async function getUserBySocketID(socketID) {
@@ -125,7 +130,7 @@ async function updateUser(
 ) {
   // Get all Userdata´s from users-Collection, including critical data (like Password)
   const userSchema = await getUserSchemaById(id);
-  const user = new User.Full(userSchema);
+  const user = new Full(userSchema);
   let result = "";
 
   // If no User was found, return with Error
@@ -343,6 +348,7 @@ async function changeSocketRoom(user, partner) {
 
 module.exports = {
   createNewUser,
+  getUserById,
   getFullUserById,
   getMediumUserById,
   getSmallUserById,

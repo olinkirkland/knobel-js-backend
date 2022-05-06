@@ -114,7 +114,8 @@ class Connection extends EventEmitter {
           .then((user) => {
             // Broadcast the message, date, and user (small) to the general-chat room
             const userSm = new User.Small(user);
-            console.log("📩", userSm.username, message);
+            // Comment emoji
+            console.log("💬", userSm.username, ": ", message);
             this.io.to("general-chat").emit("chat", {
               message: message,
               time: new Date().getTime(),
