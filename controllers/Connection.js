@@ -66,8 +66,9 @@ class Connection extends EventEmitter {
       };
 
       Connection.invalidateUserBySocketID(socket.id);
-
       this.emit(ConnectionEventType.CONNECT, socket.id, data);
+
+      this.updateOnlineUsersCount();
 
       /**
        * GAME EVENTS
@@ -129,8 +130,15 @@ class Connection extends EventEmitter {
         console.log("💀", "Socket disconnected:", socket.id);
         if (Connection.sockets[socket.id]) delete Connection.sockets[socket.id];
         this.emit(ConnectionEventType.DISCONNECT, socket.id);
+        this.updateOnlineUsersCount();
       });
     });
+  }
+
+  updateOnlineUsersCount() {
+    const count = Object.keys(Connection.sockets).length;
+    console.log("👥", count, "online users");
+    this.io.to("general-chat").emit("online-users", count);
   }
 
   connectToDatabaseAndStartServer() {

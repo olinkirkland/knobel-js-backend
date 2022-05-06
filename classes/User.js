@@ -5,6 +5,8 @@ class User {
     this.email = data.email;
     this.id = data._id;
     this.currentSkin = data.currentSkin;
+    this.currentAvatar = data.currentAvatar;
+    this.currentWallpaper = data.currentWallpaper;
     this.experience = data.experience;
     this.gold = data.gold;
     this.level = data.level;
@@ -48,10 +50,9 @@ class Full extends Medium {
     this.gold = data.gold;
     this.socketID = data.socketID;
     this.nameChanges = data.nameChanges;
-    // this.skins = data.skins;
+    this.currentWallpaper = data.currentWallpaper;
     this.friendRequestsIncoming = data.friendRequestsIncoming;
     this.friendRequestsOutgoing = data.friendRequestsOutgoing;
-    // this.avaibleAvatars = data.avaibleAvatars;
     this.currentRoom = data.currentRoom;
     this.inventory = data.inventory;
   }
