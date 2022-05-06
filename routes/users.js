@@ -31,16 +31,19 @@ router.post("/login", DataValidator.checkEmail, (req, res) => {
   } else {
     UserHandler.getUserByMail(req.body.email.toLowerCase()).then((response) => {
       if (response.length > 0) {
+        const userSchema = response[0];
+        console.log("User found", userSchema);
+
         // check Password with BCrypt and recieve new Token
         const check = Password.check(
           req.body.password,
-          response[0].password,
-          response[0].username
+          userSchema.password,
+          userSchema.username
         );
 
         if (check) {
           // Create new User without critical Data like Password etc
-          const user = new User.Full(response[0]);
+          const user = new User.Full(userSchema);
 
           const token = JWT.generate(
             user.username,
@@ -65,7 +68,7 @@ router.post("/login", DataValidator.checkEmail, (req, res) => {
         }
       } else {
         // If no User was found
-        res.send(`User not Found`);
+        res.status(400).send(`User ${req.body.email.toLowerCase()} not Found`);
       }
     });
   }
@@ -127,7 +130,7 @@ router.post("/update", JWT.check, (req, res) => {
     req.body.newEmail,
     req.body.newAvatar,
     req.body.newWallpaper,
-    req.body.newStatus,
+    req.body.newStatus
   ).then((response) => {
     // Respond with true or false to Frontend, depending on Success
     if (response !== 401 || response !== 400) {
