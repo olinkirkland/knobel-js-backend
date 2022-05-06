@@ -54,7 +54,8 @@ class Game {
       level: user.level,
       experience: user.experience,
       gamePoints: [],
-      answers: []
+      answers: [],
+      isPlaying: false // Upon joining, a player is not playing until the next time game-start is called
     };
 
     console.log("🎮", user.username, "joined game", `'${this.roomID}'`);
@@ -69,7 +70,7 @@ class Game {
     socket.join(this.roomID);
 
     Connection.instance.io.to(this.roomID).emit(GameEventType.JOINED, {
-      userID: user.id,
+      userID: user.id, // User that joined
       gameID: this.roomID,
       playerIDs: this.players.map((el) => el.userID)
     });
@@ -86,9 +87,12 @@ class Game {
     Connection.sockets[socketID].leave(this.roomID);
 
     Connection.instance.io.to(this.roomID).emit(GameEventType.LEFT, {
-      userID: user.id,
+      userID: user.id, // User that left
       playerIDs: this.players.map((el) => el.userID)
     });
+
+    // Update DB
+    UserSchema.updateOne({ socketID: socketID }, { currentRoom: "-1" });
   }
 
   async onGameStart(socketID) {
