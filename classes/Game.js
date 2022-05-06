@@ -4,6 +4,7 @@ const UserHandler = require("../controllers/UserHandler");
 const User = require("../classes/User");
 const UserSchema = require("../models/UserSchema");
 const axios = require("axios");
+const ResourceHandler = require("../controllers/ResourceHandler");
 
 class Game {
   constructor(options) {
@@ -23,8 +24,8 @@ class Game {
     this.question;
 
     this.timer;
-    this.timeoutResults = 5; // Round-Results will be shown for this amount of seconds
-    this.timeoutQuestion = 5; // Questions will be shown for this amount of seconds
+    this.timeoutResults = 0.5; // Round-Results will be shown for this amount of seconds
+    this.timeoutQuestion = 0.5; // Questions will be shown for this amount of seconds
 
     this.addConnectionListeners();
 
@@ -103,11 +104,20 @@ class Game {
       return;
     }
 
+    // Restart the Game with current Settings
+    if (this.currentRound === this.gameRounds) {
+      this.currentRound = 0;
+      this.players.push(this.spectators);
+      this.spectators = [];
+      this.players.forEach((player) => {
+        player.gamePoints = [];
+        player.answers = [];
+      });
+    }
+
     console.log("🎮", "Game", `'${this.name}'`, "started");
 
     this.onGameRoundSetup();
-
-    // Connection.instance.io.to(this.roomID).emit("game-start-in");
   }
 
   async onGameRoundSetup() {
@@ -115,11 +125,9 @@ class Game {
     if (question !== "end") {
       question.lastRound = this.currentRound === this.gameRounds ? true : false;
 
-      // Connection.instance.io.to(this.roomID).emit("game-round-setup", question);
-      this.players.forEach((player) => {
-        player.answered = false;
-        Connection.sockets[player.socketID].emit("game-round-setup", question);
-      });
+      Connection.instance.io
+        .to(this.roomID)
+        .emit(GameEventType.SETUP, question);
 
       this.timer = setTimeout(
         () => this.onGameResult(),
@@ -177,24 +185,15 @@ class Game {
 
     roundRanking.sort(compareRoundResult);
 
-    this.players.forEach((player) => {
-      Connection.sockets[player.socketID].emit("game-round-result", {
-        correctAnswer: this.question.correct_answer,
-        roundRanking: roundRanking
-      });
+    Connection.instance.io.to(this.roomID).emit(GameEventType.RESULT, {
+      correctAnswer: this.question.correct_answer,
+      roundRanking: roundRanking
     });
 
     setTimeout(() => this.onGameRoundSetup(), 1000 * this.timeoutResults);
-
-    // Connection.instance.io.to(this.roomID).emit("game-round-result", {
-    //   correctAnswer: this.question.correct_answer,
-    //   roundRanking: roundRanking
-    // });
   }
 
   async onGameEnd() {
-    this.players[1].gamePoints = [0, 0, 0, 0, 0, 50, 0, 0, 0, 50];
-
     this.players.forEach((player) => {
       player.gamePoints = player.gamePoints.reduce((pv, cv) => pv + cv, 0);
     });
@@ -209,15 +208,14 @@ class Game {
     );
 
     for (let i = 0; i < gameRanking; i++) {
-      this.addExperience(gameRanking.userID, i > 3 ? 10 : 50 - i * 10);
-      this.addGold(gameRanking.userID, i > 3 ? 10 : 50 - i * 10);
-      this.checkLevel(gameRanking[i].userID);
+      ResourceHandler.giveExperience(
+        gameRanking[i].userID,
+        i > 3 ? 10 : 50 - i * 10
+      );
+      ResourceHandler.giveGold(gameRanking[i].userID, i > 3 ? 10 : 50 - i * 10);
     }
 
-    // Connection.instance.io.to(this.roomID).emit("game-ended", gameRanking);
-    this.players.forEach((player) => {
-      Connection.sockets[player.socketID].emit("game-ended", gameRanking);
-    });
+    Connection.instance.io.to(this.roomID).emit(GameEventType.END, gameRanking);
   }
 
   async getQuestions() {
@@ -265,57 +263,6 @@ class Game {
     } else {
       return "end";
     }
-  }
-
-  async checkLevel(userID) {
-    let user = await UserHandler.getFullUserById(userID);
-    let requiredXP = 100 + ((user.level / 7) ^ 2);
-    let lvlUp = true;
-
-    if (user.experience >= requiredXP) {
-      do {
-        user.level++;
-        user.experience = user.experience - requiredXP;
-        requiredXP = (100 + user.level / 7) ^ 2;
-        lvlUp = user.experience >= requiredXP ? true : false;
-      } while (lvlUp);
-
-      UserSchema.findByIdAndUpdate(
-        { _id: userID },
-        { level: user.level, experience: user.experience }
-      ).catch((err) => console.log(err));
-
-      return 228;
-    } else {
-      return 227;
-    }
-  }
-
-  async addExperience(userID, experience) {
-    let error = null;
-
-    await UserSchema.findByIdAndUpdate(
-      { _id: userID },
-      { experience: experience }
-    ).catch((err) => {
-      console.log("AddXP-Error: ", err);
-      error = 512;
-    });
-
-    return error !== null ? error : checkLevel(userID);
-  }
-
-  async addGold(userID, gold) {
-    let error = null;
-
-    await UserSchema.findByIdAndUpdate({ _id: userID }, { gold: gold }).catch(
-      (err) => {
-        console.log("AddGold-Error: ", err);
-        error = 512;
-      }
-    );
-
-    return error !== null ? error : 201;
   }
 
   getCategoryID(category) {
@@ -405,16 +352,6 @@ function compareRoundResult(a, b) {
     return -1;
   }
   if (a.points > b.points) {
-    return 1;
-  }
-  return 0;
-}
-
-function compareGameResult(a, b) {
-  if (a < b) {
-    return -1;
-  }
-  if (a > b) {
     return 1;
   }
   return 0;
