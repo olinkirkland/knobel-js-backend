@@ -1,5 +1,9 @@
 const { v4: uuidv4 } = require("uuid");
-const { Connection, GameEventType } = require("../controllers/Connection");
+const {
+  Connection,
+  GameEventType,
+  ConnectionEventType
+} = require("../controllers/Connection");
 const UserHandler = require("../controllers/UserHandler");
 const User = require("../classes/User");
 const UserSchema = require("../models/UserSchema");
@@ -36,6 +40,7 @@ class Game {
     const connection = Connection.instance;
     connection.on(GameEventType.JOIN, this.onGameJoin.bind(this));
     connection.on(GameEventType.LEAVE, this.onGameLeave.bind(this));
+    connection.on(ConnectionEventType.DISCONNECT, this.onGameLeave.bind(this));
     connection.on(GameEventType.START, this.onGameStart.bind(this));
     connection.on(GameEventType.ANSWER, this.onGameAnswer.bind(this));
     connection.on(GameEventType.SETUP, this.onGameRoundSetup.bind(this));
@@ -85,12 +90,13 @@ class Game {
     // Remove player with userID == user.id from players
     this.players = this.players.filter((el) => el.userID !== user.id);
 
-    Connection.sockets[socketID].leave(this.roomID);
-
+    const socket = Connection.getSocket(socketID);
     Connection.instance.io.to(this.roomID).emit(GameEventType.LEFT, {
       userID: user.id, // User that left
       playerIDs: this.players.map((el) => el.userID)
     });
+
+    if (socket) socket.leave(this.roomID);
 
     // Update DB
     UserSchema.updateOne({ socketID: socketID }, { currentRoom: "-1" });
