@@ -51,7 +51,8 @@ async function createNewUser(password, isGuest, email) {
       "LgzPFDYuFg53oV8Q0CnG3", // Corgi (Avatar)
       "nbKnDUBgYwiQcUJjI8gYG", // Prism (Wallpaper)
       "KgkdXnvuUjgFg9mFsF_o1" // Embroidery (Wallpaper)
-    ]
+    ],
+    status: "Guests like to keep their secrets..."
   });
 
   await newUser.save();
@@ -115,7 +116,8 @@ async function updateUser(
   newSkin,
   newEmail,
   newAvatar,
-  newWallpaper
+  newWallpaper,
+  newStatus
 ) {
   // Get all Userdata´s from users-Collection, including critical data (like Password)
   const user = await getFullUserById(id);
@@ -164,6 +166,10 @@ async function updateUser(
         { _id: id },
         { currentWallpaper: newWallpaper }
       );
+    }
+
+    if (newStatus) {
+      await UserSchema.findByIdAndUpdate({ _id: id }, { status: newStatus });
     }
 
     if (newEmail) {

@@ -79,6 +79,10 @@ const userSchema = new Schema({
     required: true,
     type: String,
   },
+  status: {
+    required: true,
+    type: String,
+  },
   inventory: {
     type: Array,
     required: true,
