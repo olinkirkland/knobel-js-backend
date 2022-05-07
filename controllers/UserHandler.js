@@ -97,7 +97,7 @@ async function getSmallUserById(id) {
     : new Small(user);
 }
 
-async function getUserBySocketID(socketID) {
+async function getUserSchemaBySocketID(socketID) {
   // Get Userdata from currentlyonlines-Collection
   const user = await UserSchema.findOne({
     socketID: socketID
@@ -255,7 +255,7 @@ async function updateToken(id, token) {
 
 async function changeOnlineState(data, socketID) {
   // Try to get User by SocketID (For Disconnect)
-  const currentUser = await getUserBySocketID(socketID);
+  const currentUser = await getUserSchemaBySocketID(socketID);
 
   // Get ID from data if User is connecting. If User disconnects, get ID from currentlyonlines-Collection
   const id =
@@ -354,7 +354,7 @@ module.exports = {
   getMediumUserById,
   getSmallUserById,
   getUserByMail,
-  getUserBySocketID,
+  getUserSchemaBySocketID,
   deleteUser,
   updateUser,
   changeOnlineState,

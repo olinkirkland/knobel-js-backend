@@ -1,22 +1,20 @@
+const { User } = require("../classes/User");
 const {
   Connection,
   GameEventType,
   ConnectionEventType
 } = require("../controllers/Connection");
-const { getUserBySocketID } = require("../controllers/UserHandler");
+const { getUserSchemaBySocketID } = require("../controllers/UserHandler");
 const Game = require("./Game");
 
 const games = [];
 
 Connection.instance.on(ConnectionEventType.DISCONNECT, (socketID, data) => {
   // A user disconnected, remove them from any game they are in
-  const user = getUserBySocketID(socketID);
-  if (user.gameID) {
-    const game = games.find((game) => game.id === user.gameID);
-    if (game) {
-      game.removeUser(user);
-    }
-  }
+  console.log("@Arcade 💀 User disconnected:", socketID);
+  
+  const user = new User(getUserSchemaBySocketID(socketID));
+  if (user.gameID) leaveGame(user);
 });
 
 function hostGame(user, gameOptions) {
@@ -78,6 +76,19 @@ function leaveGame(user) {
   game.removePlayer(user);
 
   console.log(`🎮 User ${user.username} left game ${user.gameID}`);
+
+  if (game.players.length === 0) {
+    // Delete the game if there are no players left
+    game.dispose();
+    games.splice(games.indexOf(game), 1);
+    console.log(
+      `🗑️ Game ${game.name} was garbage collected because there were no players`
+    );
+  } else {
+    // If the host left, pick a new host
+    // todo
+  }
+
   return true;
 }
 

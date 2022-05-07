@@ -117,6 +117,11 @@ class Game {
     Connection.instance.io.to(this.gameID).emit(event, data);
   }
 
+  dispose() {
+    // Dispose of the game
+    // todo
+  }
+
   addConnectionListeners() {
     const connection = Connection.instance;
     connection.on(GameEventType.JOIN, this.onGameJoin.bind(this));
