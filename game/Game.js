@@ -73,7 +73,7 @@ class Game {
   toGameState() {
     // Return a small object with the game's data representing the full game state
     return {
-      ...leaflet
+      ...this.toListItem()
     };
   }
 
@@ -89,8 +89,16 @@ class Game {
     UserHandler.getUserSchemaById(user.id).then((userSchema) => {
       userSchema.currentRoom = this.gameID;
       userSchema.save();
+
+      // TODO: Send the following when userSchema.save() is successful
+      // for now, wait one second
+      setTimeout(
+        () => Connection.invalidateUserBySocketID(user.socketID),
+        1000
+      );
     });
 
+    // Subscribe the player's socket to the gameID room so they are included in game broadcasts
     player.socket.join(this.gameID);
 
     this.players.push(player);
@@ -105,6 +113,13 @@ class Game {
     UserHandler.getUserSchemaById(user.id).then((userSchema) => {
       userSchema.currentRoom = "";
       userSchema.save();
+
+      // TODO: Send the following when userSchema.save() is successful
+      // for now, wait one second
+      setTimeout(
+        () => Connection.invalidateUserBySocketID(user.socketID),
+        1000
+      );
     });
 
     player.socket.leave(this.gameID);
@@ -114,6 +129,7 @@ class Game {
   }
 
   broadcast(event, data) {
+    // Broadcasts an event/data to members of this game's room
     Connection.instance.io.to(this.gameID).emit(event, data);
   }
 
@@ -124,13 +140,12 @@ class Game {
 
   addConnectionListeners() {
     const connection = Connection.instance;
-    connection.on(GameEventType.JOIN, this.onGameJoin.bind(this));
-    connection.on(GameEventType.LEAVE, this.onGameLeave.bind(this));
-    connection.on(GameEventType.START, this.onGameStart.bind(this));
-    connection.on(GameEventType.ANSWER, this.onGameAnswer.bind(this));
-    connection.on(GameEventType.SETUP, this.onGameRoundSetup.bind(this));
-    connection.on(GameEventType.RESULT, this.onGameResult.bind(this));
-    connection.on(GameEventType.END, this.onGameEnd.bind(this));
+    // connection.on(GameEventType.START, this.onGameStart.bind(this)); // Make  a route
+    // connection.on(GameEventType.ANSWER, this.onGameAnswer.bind(this)); // Make a route
+
+    connection.on(GameEventType.SETUP, this.onGameRoundSetup.bind(this)); // Be -> Fe
+    connection.on(GameEventType.RESULT, this.onGameResult.bind(this)); // Be -> Fe
+    connection.on(GameEventType.END, this.onGameEnd.bind(this)); // Be -> Fe
   }
 
   async onGameJoin(socketID, gameID) {
