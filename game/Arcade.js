@@ -11,10 +11,12 @@ const games = [];
 
 Connection.instance.on(ConnectionEventType.DISCONNECT, (socketID, data) => {
   // A user disconnected, remove them from any game they are in
-  console.log("@Arcade 💀 User disconnected:", socketID);
   
-  const user = new User(getUserSchemaBySocketID(socketID));
-  if (user.gameID) leaveGame(user);
+  const userSchema = getUserSchemaBySocketID(socketID).then((userSchema) => {
+    if (!userSchema) return;
+    const user = new User(userSchema);
+    if (user.gameID) leaveGame(user);
+  });
 });
 
 function hostGame(user, gameOptions) {

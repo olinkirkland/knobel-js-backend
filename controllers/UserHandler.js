@@ -74,7 +74,7 @@ async function getFullUserById(id) {
   // Get Userdata from users-Collection without critical data, like Password
 
   const user = await UserSchema.findById(id).catch(() => "Error");
-  return user === "Error" || user === null
+  return !user || user === "Error"
     ? "Error: ID invalid!"
     : new Full(user);
 }
@@ -83,7 +83,7 @@ async function getMediumUserById(id) {
   // Get Userdata from users-Collection without critical data, like Password
 
   const user = await UserSchema.findById(id).catch(() => "Error");
-  return user === "Error" || user === null
+  return !user || user === "Error"
     ? "Error: ID invalid!"
     : new Medium(user);
 }
@@ -92,7 +92,7 @@ async function getSmallUserById(id) {
   // Get Userdata from users-Collection without critical data, like Password
 
   const user = await UserSchema.findById(id).catch(() => "Error");
-  return user === "Error" || user === null
+  return !user || user === "Error"
     ? "Error: ID invalid!"
     : new Small(user);
 }
@@ -103,7 +103,7 @@ async function getUserSchemaBySocketID(socketID) {
     socketID: socketID
   }).catch(() => "Error");
 
-  return user === "Error" || user === null ? "Error: ID invalid!" : user;
+  return user;
 }
 
 async function getUserByMail(email) {
@@ -258,8 +258,7 @@ async function changeOnlineState(data, socketID) {
   const currentUser = await getUserSchemaBySocketID(socketID);
 
   // Get ID from data if User is connecting. If User disconnects, get ID from currentlyonlines-Collection
-  const id =
-    currentUser === "Error: ID invalid!" ? data.userID : currentUser.userID;
+  const id = currentUser ? currentUser.userID : data.userID;
 
   // Get User by ID
   const user = await getFullUserById(id);
