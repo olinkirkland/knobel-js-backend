@@ -18,7 +18,7 @@ class Mode {
 class Player {
   user; // Reference to the user
   isPlaying; // True: Player is currently playing, False: Player is spectating
-  state;
+  state; // Current player state
 }
 
 class PlayerState {
@@ -45,16 +45,12 @@ class Game {
     this.roundIndex = 0; // Current round index
     this.question;
 
-    this.timer;
-    this.timeoutResults = 0.5; // Round-Results will be shown for this amount of seconds
-    this.timeoutQuestion = 0.5; // Questions will be shown for this amount of seconds
+    this.questionDuration = 3; // Questions will be shown for this amount of seconds
+    this.resultsDuration = 3; // Round-Results will be shown for this amount of seconds
 
-    // this.addConnectionListeners();
+    setInterval(() => this.onGameTick.bind(this), 100);
 
-    // Test
-    setInterval(() => {
-      this.broadcast(GameEventType.INVALIDATE);
-    }, 5000);
+    this.addConnectionListeners();
   }
 
   start() {
@@ -65,8 +61,7 @@ class Game {
     this.roundIndex = 0;
     this.spectators = [];
     this.players.forEach((player) => {
-      player.gamePoints = [];
-      player.answers = [];
+      player.points = 0;
       player.isPlaying = true;
     });
 
@@ -83,26 +78,39 @@ class Game {
       return;
     }
 
+    // Reset player answers
+    this.players.forEach((player) => {
+      player.answer = -1;
+    });
+
     // const question = this.getQuestions();
     // question.lastRound = this.roundIndex === this.numberOfRounds ? true : false;
 
-    this.broadcast(GameEventType.SETUP, {
-      roundIndex: this.roundIndex,
-      question: {
-        question: "What color is the sky?",
-        answers: ["blue", "red", "green", "yellow"]
-      }
-    });
+    this.invalidateGameData();
 
-    this.timer = setTimeout(endRound(), 1000 * this.timeoutQuestion);
+    this.timer = setTimeout(
+      this.endRound.bind(this),
+      1000 * this.questionDuration
+    );
+  }
+
+  invalidateGameData() {
+    Connection.instance.io.to(this.gameID).emit(GameEventType.INVALIDATE);
   }
 
   endRound() {
-    // Tally up the scores
-    const scores = [];
+    // Award players with their points
 
     // End the round
-    this.broadcast(GameEventType.END_ROUND, { results: scores });
+    console.log("Round Ended!");
+    this.broadcast(GameEventType.ROUND_END);
+  }
+
+  endGame() {
+    // End the game
+    this.gameMode = Mode.LOBBY;
+
+    this.broadcast(GameEventType.END_GAME);
   }
 
   toListItem() {
@@ -129,15 +137,15 @@ class Game {
       user: user,
       isPlaying: false,
       socket: Connection.getSocket(user.socketID),
-      gamePoints: [],
-      answers: []
+      answer: -1,
+      points: 0
     };
 
     user.gameID = this.gameID;
 
     UserHandler.getUserSchemaById(user.id).then((userSchema) => {
-      console.log(user.id);
-      console.log(userSchema);
+      // console.log(user.id);
+      // console.log(userSchema);
       userSchema.currentRoom = this.gameID;
       userSchema.save();
 
@@ -187,6 +195,14 @@ class Game {
   addConnectionListeners() {
     const connection = Connection.instance;
     connection.on(GameEventType.MOVE_CURSOR, this.onMoveCursor.bind(this));
+  }
+
+  onMoveCursor(data) {
+    // Move the cursor
+  }
+
+  onGameTick() {
+    this.broadcast(GameEventType.GAME_TICK, {});
   }
 
   dispose() {
@@ -245,7 +261,7 @@ class Game {
       roundRanking: roundRanking
     });
 
-    setTimeout(() => this.onGameRoundSetup(), 1000 * this.timeoutResults);
+    setTimeout(() => this.onGameRoundSetup(), 1000 * this.resultsDuration);
   }
 
   async onGameEnd() {

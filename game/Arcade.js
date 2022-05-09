@@ -55,7 +55,7 @@ function joinGame(user, gameID) {
 
   // Add user to game
   game.addPlayer(user);
-  Connection.instance.io.to(gameID).emit(GameEventType.INVALIDATE);
+  game.invalidateGameData();
 
   console.log(`🎮 User ${user.username} joined game ${gameID}`);
   return true;
