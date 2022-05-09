@@ -58,7 +58,10 @@ router.get("/categories", JWT.check, (req, res) => {
 });
 
 router.post("/answer", JWT.check, async (req, res) => {
-  const answer = req.body.answer;
+  const answer =
+    typeof req.body.answer === "number"
+      ? req.body.answer
+      : parseInt(req.body.answer);
   const userID = req.body.userID;
 
   const user = await UserSchema.findOne({ id: userID }).catch((err) =>
