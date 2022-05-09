@@ -90,6 +90,7 @@ function leaveGame(user) {
   if (user.id === game.hostUser.id) {
     // If the host left, pick a new host
     // game.hostUser = getUserSchemaBySocketID(game.players[0].socketID);
+    // Connection.invalidateGameData();
   }
 
   return true;
