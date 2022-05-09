@@ -1,84 +1,64 @@
 {
-  "avatars" : [
+  "avatars": [
     {
-      "_id": "627269ec4f55151413022bf6",
       "name": "Wonder Woman",
       "cost": 250,
       "id": "eb463c36-9044-4c3e-88f3-f82a083d3a8b",
-      "url": "https://img.icons8.com/stickers/500/000000/wonder-woman.png",
-      "__v": 0
+      "url": "https://img.icons8.com/stickers/500/000000/wonder-woman.png"
     },
     {
-      "_id": "627269ec4f55151413022bf5",
       "name": "Wolverine",
       "cost": 250,
       "id": "2748021b-95dc-4f23-ab8c-a37a6b16ad55",
-      "url": "https://img.icons8.com/stickers/500/000000/wolverine--v3.png",
-      "__v": 0
+      "url": "https://img.icons8.com/stickers/500/000000/wolverine--v3.png"
     },
     {
-      "_id": "627269ec4f55151413022c37",
       "name": "Ying-Yang",
       "cost": 100,
       "id": "094773b1-30e9-4a33-8876-a997d1621dc5",
-      "url": "https://img.icons8.com/stickers/100/000000/yin-yang.png",
-      "__v": 0
+      "url": "https://img.icons8.com/stickers/100/000000/yin-yang.png"
     },
     {
-      "_id": "627269ec4f55151413022c3a",
       "name": "Bavarian Hat",
       "cost": 100,
       "id": "2ab6ae61-fed1-408b-a8de-4afcb39c8502",
-      "url": "https://img.icons8.com/stickers/100/000000/german-hat.png",
-      "__v": 0
+      "url": "https://img.icons8.com/stickers/100/000000/german-hat.png"
     },
     {
-      "_id": "627269ec4f55151413022c3c",
       "name": "Spartan Helmet",
       "cost": 100,
       "id": "c1b06693-3b5a-4e4a-ad84-1b52c5f92d57",
-      "url": "https://img.icons8.com/stickers/100/000000/armored-helmet.png",
-      "__v": 0
+      "url": "https://img.icons8.com/stickers/100/000000/armored-helmet.png"
     },
     {
-      "_id": "627269ec4f55151413022c3b",
       "name": "Ninja",
       "cost": 100,
       "id": "62874578-0fb1-416b-9c32-e1aad1ec9129",
-      "url": "https://img.icons8.com/stickers/100/000000/ninja-head.png",
-      "__v": 0
+      "url": "https://img.icons8.com/stickers/100/000000/ninja-head.png"
     },
     {
-      "_id": "627269ec4f55151413022c36",
       "name": "Sombrero",
       "cost": 100,
       "id": "0b15bf86-dca6-4e4e-b801-b835bd62a7a2",
-      "url": "https://img.icons8.com/stickers/100/000000/sombrero.png",
-      "__v": 0
+      "url": "https://img.icons8.com/stickers/100/000000/sombrero.png"
     },
     {
-      "_id": "627269ec4f55151413022bf8",
       "name": "Thor",
       "cost": 250,
       "id": "f90ea4ae-4b1e-4a59-936e-111c8075762d",
-      "url": "https://img.icons8.com/stickers/100/000000/thor.png",
-      "__v": 0
+      "url": "https://img.icons8.com/stickers/100/000000/thor.png"
     },
     {
-      "_id": "627269ec4f55151413022bf9",
       "name": "Storm",
       "cost": 250,
       "id": "0d7ad03a-7c85-49d7-9604-5259eed29d9c",
-      "url": "https://img.icons8.com/stickers/500/000000/storm-marvel--v6.png",
-      "__v": 0
+      "url": "https://img.icons8.com/stickers/500/000000/storm-marvel--v6.png"
     },
     {
-      "_id": "627269ec4f55151413022bf7",
       "name": "Venom",
       "cost": 250,
       "id": "d51d061d-53fc-4dfe-86db-25e13929b926",
-      "url": "https://img.icons8.com/stickers/500/000000/venom-head.png",
-      "__v": 0
+      "url": "https://img.icons8.com/stickers/500/000000/venom-head.png"
     }
   ]
 }
