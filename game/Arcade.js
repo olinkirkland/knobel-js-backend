@@ -85,9 +85,11 @@ function leaveGame(user) {
     console.log(
       `🗑️ Game ${game.name} was garbage collected because there were no players`
     );
-  } else {
+  }
+
+  if (user.id === game.hostUser.id) {
     // If the host left, pick a new host
-    // todo
+    game.hostUser = getUserSchemaBySocketID(game.players[0].socketID);
   }
 
   return true;
