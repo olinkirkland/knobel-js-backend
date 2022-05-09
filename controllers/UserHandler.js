@@ -275,7 +275,7 @@ async function changeOnlineState(data, socketID) {
       } else {
         // Update users-Collection >>> Change isOnline-Boolean = false
         await UserSchema.updateOne(
-          { id: currentUser._id },
+          { id: currentUser.id },
           { isOnline: data.online, socketID: "" }
         );
       }
