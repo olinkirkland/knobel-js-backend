@@ -1,21 +1,41 @@
 class User {
-  // Create User-Object for Response to Frontend without critical Data like Password
-  constructor(data, token) {
-    this.username = data.username;
-    this.email = data.email;
-    this.id = data._id;
-    this.currentSkin = data.currentSkin;
-    this.currentAvatar = data.currentAvatar;
-    this.currentWallpaper = data.currentWallpaper;
-    this.experience = data.experience;
-    this.gold = data.gold;
-    this.level = data.level;
-    this.skins = data.skins;
-    this.friends = data.friends;
-    this.friendRequestsIncoming = data.friendRequestsIncoming;
-    this.friendRequestsOutgoing = data.friendRequestsOutgoing;
-    this.isGuest = data.isGuest;
-    this.inventory = data.inventory;
+  constructor(userSchema, token) {
+    // General
+    this.id = userSchema._id.toString(); // The user's id, used to lookup in DB
+    this.username = userSchema.username; // The user's username, chosen by the user
+    this.email = userSchema.email; // The user's email address
+    this.isGuest = userSchema.isGuest; // Whether the user is a guest or not
+    this.socketID = userSchema.socketID; // The user's socket ID
+    this.gameID = userSchema.currentRoom; // The user's current game
+
+    // Customizations
+    this.currentSkin = userSchema.currentSkin; // The user's current skin
+    this.currentAvatar = userSchema.currentAvatar; // The user's current avatar
+    this.currentWallpaper = userSchema.currentWallpaper; // The user's current wallpaper
+
+    // Resources
+    this.experience = userSchema.experience; // Experience
+    this.level = userSchema.level; // Level (based off experience)
+    this.gold = userSchema.gold; // Gold, used to purchase items
+
+    // Social
+    this.friends = userSchema.friends; // Friends
+    this.friendRequestsIncoming = userSchema.friendRequestsIncoming; // Incoming friend requests
+    this.friendRequestsOutgoing = userSchema.friendRequestsOutgoing; // Outgoing friend requests
+
+    // Items
+    this.inventory = userSchema.inventory; // An array of item IDs that correspond to items owned by the user
+  }
+
+  toPlayerData() {
+    // Packaged object containing only the information needed for in-game players
+    return {
+      id: this.id,
+      username: this.username,
+      currentAvatar: this.currentAvatar,
+      level: this.level,
+      isGuest: this.isGuest
+    };
   }
 }
 
@@ -50,13 +70,13 @@ class Full extends Medium {
     this.email = data.email;
     this.gold = data.gold;
     this.socketID = data.socketID;
+    this.gameID = data.currentRoom;
     this.nameChanges = data.nameChanges;
     this.currentWallpaper = data.currentWallpaper;
     this.friendRequestsIncoming = data.friendRequestsIncoming;
     this.friendRequestsOutgoing = data.friendRequestsOutgoing;
-    this.currentRoom = data.currentRoom;
     this.inventory = data.inventory;
   }
 }
 
-module.exports = { Full, Medium, Small };
+module.exports = { User, Full, Medium, Small };

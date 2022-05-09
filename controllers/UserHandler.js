@@ -4,7 +4,7 @@ const Password = require("../controllers/Password");
 
 const UserSchema = require("../models/UserSchema");
 const CurrentlyOnlineSchema = require("../models/CurrentlyOnlineSchema");
-const User = require("../classes/User");
+const { User, Small, Medium, Full } = require("../classes/User");
 const FriendsSchema = require("../models/FriendsSchema");
 
 const randomUserName = require("../classes/randomUsername");
@@ -65,6 +65,11 @@ async function getUserSchemaById(id) {
   return (await UserSchema.find({ id: id }))[0];
 }
 
+async function getUserById(id) {
+  const userSchema = await getUserSchemaById(id);
+  return new User(userSchema);
+}
+
 async function getFullUserById(id) {
   // Get Userdata from users-Collection without critical data, like Password
 
@@ -72,7 +77,7 @@ async function getFullUserById(id) {
   console.log(user);
   return user === "Error" || user === null
     ? "Error: ID invalid!"
-    : new User.Full(user[0]);
+    : new Full(user[0]);
 }
 
 async function getMediumUserById(id) {
@@ -93,13 +98,13 @@ async function getSmallUserById(id) {
     : new User.Small(user[0]);
 }
 
-async function getUserBySocketID(socketID) {
+async function getUserSchemaBySocketID(socketID) {
   // Get Userdata from currentlyonlines-Collection
   const user = await UserSchema.findOne({
     socketID: socketID
   }).catch(() => "Error");
 
-  return user === "Error" || user === null ? "Error: ID invalid!" : user;
+  return user;
 }
 
 async function getUserByMail(email) {
@@ -126,7 +131,7 @@ async function updateUser(
 ) {
   // Get all Userdata´s from users-Collection, including critical data (like Password)
   const userSchema = await getUserSchemaById(id);
-  const user = new User.Full(userSchema);
+  const user = new Full(userSchema);
   let result = "";
 
   // If no User was found, return with Error
@@ -250,11 +255,10 @@ async function updateToken(id, token) {
 
 async function changeOnlineState(data, socketID) {
   // Try to get User by SocketID (For Disconnect)
-  const currentUser = await getUserBySocketID(socketID);
+  const currentUser = await getUserSchemaBySocketID(socketID);
 
   // Get ID from data if User is connecting. If User disconnects, get ID from currentlyonlines-Collection
-  const id =
-    currentUser === "Error: ID invalid!" ? data.userID : currentUser.userID;
+  const id = currentUser ? currentUser.userID : data.userID;
 
   // Get User by ID
   const user = await getFullUserById(id);
@@ -345,11 +349,13 @@ async function changeSocketRoom(user, partner) {
 
 module.exports = {
   createNewUser,
+  getUserSchemaById,
+  getUserById,
   getFullUserById,
   getMediumUserById,
   getSmallUserById,
   getUserByMail,
-  getUserBySocketID,
+  getUserSchemaBySocketID,
   deleteUser,
   updateUser,
   changeOnlineState,

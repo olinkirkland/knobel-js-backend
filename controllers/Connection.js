@@ -15,9 +15,8 @@ class ConnectionEventType {
 }
 
 class GameEventType {
-  static JOIN = "game-join"; // FE -> BE User joined game
+  static INVALIDATE = "invalidate-game"; // Invalidate game data (tells front-end to refresh)
   static JOINED = "game-joined"; // BE -> FE User joined game
-  static LEAVE = "game-leave"; // FE -> BE User left game
   static LEFT = "game-left"; // BE -> FE User left game
   static START = "game-start"; // FE -> BE Host starts the Game
   static SETUP = "game-round-setup"; // BE -> FE Send information for the current game round, e.g. Questions
@@ -82,26 +81,6 @@ class Connection extends EventEmitter {
         this.emit(GameEventType.JOIN, socket.id, data);
       });
 
-      socket.on(GameEventType.START, (data) => {
-        this.emit(GameEventType.START, socket.id);
-      });
-
-      socket.on(GameEventType.ANSWER, (data) => {
-        this.emit(GameEventType.ANSWER, socket.id, data);
-      });
-
-      socket.on(GameEventType.SETUP, (data) => {
-        this.emit(GameEventType.SETUP, socket.id, data);
-      });
-
-      socket.on(GameEventType.RESULT, (data) => {
-        this.emit(GameEventType.RESULT, socket.id, data);
-      });
-
-      socket.on(GameEventType.END, (data) => {
-        this.emit(GameEventType.END, socket.id, data);
-      });
-
       /**
        * CHAT EVENTS
        */
@@ -115,7 +94,8 @@ class Connection extends EventEmitter {
           .then((user) => {
             // Broadcast the message, date, and user (small) to the general-chat room
             const userSm = new User.Small(user);
-            console.log("📩", userSm.username, message);
+            // Comment emoji
+            console.log("💬", userSm.username, ": ", message);
             this.io.to("general-chat").emit("chat", {
               message: message,
               time: new Date().getTime(),

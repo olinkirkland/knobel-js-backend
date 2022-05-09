@@ -2,68 +2,58 @@ const express = require("express");
 const router = express.Router();
 
 const JWT = require("../controllers/JWT");
-const gameHandler = require("../controllers/gameHandler");
-const Game = require("../classes/Game");
+const gameHandler = require("../game/GameData");
 const UserHandler = require("../controllers/UserHandler");
+const Arcade = require("../game/Arcade");
 
-const currentGames = [];
-
-router.post("/", JWT.check, (req, res) => {
-  // Return an Array with Objects of Questions, depending on the choice of Options.
-  // Options:
-  // difficulty: easy || medium || hard
-  // type: mutliple || boolean (If empty: mutliple)
-  // amount: 1 - 50 (If empty: 10)
-  // category: One of all Categories as String (Request /categories to see Options)
-
-  const options = req.body;
-  gameHandler.getQuestions(options).then((response) => res.send(response));
-});
-
-router.get("/categories", JWT.check, (req, res) => {
-  // Return avaible Categories for Questions as an Array
-  res.send(gameHandler.categoriesCatalog());
+router.get("/list", (req, res) => {
+  res.send(Arcade.games.map((game) => game.toListItem()));
 });
 
 router.post("/host", JWT.check, async (req, res) => {
-  const options = req.body;
-  const host = await UserHandler.getFullUserById(options.hostID);
-  // options.players = [
-  //   {
-  //     userID: host.id,
-  //     socketID: host.socketID,
-  //     username: host.username,
-  //     level: host.level,
-  //     experience: host.experience,
-  //     gamePoints: [],
-  //     answers: []
-  //   }
-  // ];
+  console.log(req.body);
+  const user = await UserHandler.getUserById(req.body.userID);
+  const gameOptions = req.body.gameOptions;
 
-  console.log(
-    "🎮",
-    "Hosting new game",
-    `'${options.name}'`,
-    "by user",
-    host.username,
-    "..."
-  );
-
-  if (currentGames.find((el) => el.name === options.name)?.name) {
-    // Error!
-    res.status(400).send("Name is unavailable");
-    console.log("Game name", `'${options.name}'`, "is unavailable");
-  } else {
-    // Success!
-    const game = new Game(options);
-    currentGames.push(game);
-    res.status(201).send(game);
-  }
+  const gameID = Arcade.hostGame(user, gameOptions);
+  if (gameID) res.status(200).send(gameID);
+  else res.status(500).send("Error creating game");
 });
 
-router.get("/currentgames", JWT.check, (req, res) => {
-  res.send(currentGames);
+router.post("/join", JWT.check, async (req, res) => {
+  const user = await UserHandler.getUserById(req.body.userID);
+  const gameID = req.body.gameID;
+
+  Arcade.joinGame(user, gameID)
+    ? res.status(200).send("Game joined")
+    : res.status(500).send("Error joining game");
 });
 
-//! vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-module.exports = { router, currentGames };
+router.post("/leave", JWT.check, async (req, res) => {
+  const user = await UserHandler.getUserById(req.body.userID);
+
+  Arcade.leaveGame(user)
+    ? res.status(200).send("Game left")
+    : res.status(500).send("Error leaving game");
+});
+
+router.get("/:id", JWT.check, (req, res) => {
+  // Return game state, this is called by clients when the game state is invalidated via socket
+  const gameID = req.params.id;
+  const game = Arcade.getGame(gameID);
+
+  // Does game exist?
+  if (!game) return res.status(404).send("Game not found");
+
+  // Is the user in the game?
+  console.log(req);
+
+  res.status(200).send(game.toGameState());
+});
+
+router.get("/categories", JWT.check, (req, res) => {
+  // Return available question categories
+  res.send(gameHandler.categoriesCatalog());
+});
+
+module.exports = { router };

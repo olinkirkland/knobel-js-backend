@@ -10,46 +10,146 @@ const UserSchema = require("../models/UserSchema");
 const axios = require("axios");
 const ResourceHandler = require("../controllers/ResourceHandler");
 
+class Mode {
+  static GAME = "mode-game";
+  static LOBBY = "mode-lobby";
+}
+
+class Player {
+  user; // Reference to the user
+  isPlaying; // True: Player is currently playing, False: Player is spectating
+  state;
+}
+
+class PlayerState {
+  coord = { x: 0, y: 0 };
+}
+
 class Game {
-  constructor(options) {
-    this.name = options.name;
-    this.roomID = uuidv4();
-    this.hostID = options.hostID;
-    this.password = options.password ? options.password : null;
-    this.maxPlayer = options.maxPlayer;
-    this.players = options.players ? options.players : [];
-    this.spectators = options.spectators ? options.spectators : [];
-    this.gameMode = options.gameMode;
-    this.gameCategory = options.category;
-    this.gameDifficulty = options.difficulty;
-    this.gameRounds = options.rounds ? options.rounds : 10;
-    this.currentRound = 0;
-    this.correctAnswer = -2;
+  constructor(options, hostUser) {
+    this.name = options.name; // Unique name of this game instance
+    this.gameID = uuidv4(); // Unique ID of this game instance
+
+    this.hostUser = hostUser; // Reference to the host user
+
+    this.password = options.password; // Password is string or null
+    this.maxPlayers = options.maxPlayers; // Maximum number of players allowed
+
+    this.players = []; // Array of current players
+    this.gameMode = Mode.LOBBY; // Current mode of the game
+
+    this.category = options.category;
+    this.difficulty = options.difficulty;
+
+    this.numberOfRounds = options.numberOfRounds ? options.numberOfRounds : 10; // Number of rounds to play
+    this.roundIndex = 0; // Current round index
+    this.answerIndex;
     this.question;
 
     this.timer;
     this.timeoutResults = 0.5; // Round-Results will be shown for this amount of seconds
     this.timeoutQuestion = 0.5; // Questions will be shown for this amount of seconds
 
-    this.addConnectionListeners();
+    // this.addConnectionListeners();
 
-    console.log("✔️", "Game", `'${this.name}'`, "was created successfully");
+    // Test
+    setInterval(() => {
+      this.broadcast(GameEventType.INVALIDATE);
+    }, 5000);
+  }
+
+  toListItem() {
+    // Return a small object with the game's data intended to be displayed in a list of games
+    return {
+      gameID: this.gameID,
+      name: this.name,
+      host: this.hostUser.toPlayerData(),
+      playerCount: this.players.length,
+      maxPlayers: this.maxPlayers,
+      inProgress: this.gameMode === Mode.GAME
+    };
+  }
+
+  toGameState() {
+    // Return a small object with the game's data representing the full game state
+    return {
+      ...this.toListItem()
+    };
+  }
+
+  addPlayer(user) {
+    const player = {
+      user: user,
+      isPlaying: false,
+      socket: Connection.getSocket(user.socketID)
+    };
+
+    user.gameID = this.gameID;
+
+    UserHandler.getUserSchemaById(user.id).then((userSchema) => {
+      userSchema.currentRoom = this.gameID;
+      userSchema.save();
+
+      // TODO: Send the following when userSchema.save() is successful
+      // for now, wait one second
+      setTimeout(
+        () => Connection.invalidateUserBySocketID(user.socketID),
+        1000
+      );
+    });
+
+    // Subscribe the player's socket to the gameID room so they are included in game broadcasts
+    player.socket.join(this.gameID);
+
+    this.players.push(player);
+  }
+
+  removePlayer(user) {
+    const player = this.players.find((p) => p.user.id === user.id);
+
+    if (!player) return;
+
+    user.gameID = "";
+    UserHandler.getUserSchemaById(user.id).then((userSchema) => {
+      userSchema.currentRoom = "";
+      userSchema.save();
+
+      // TODO: Send the following when userSchema.save() is successful
+      // for now, wait one second
+      setTimeout(
+        () => Connection.invalidateUserBySocketID(user.socketID),
+        1000
+      );
+    });
+
+    player.socket.leave(this.gameID);
+
+    // Remove the player
+    this.players = this.players.filter((p) => p.user.id !== user.id);
+  }
+
+  broadcast(event, data) {
+    // Broadcasts an event/data to members of this game's room
+    Connection.instance.io.to(this.gameID).emit(event, data);
+  }
+
+  dispose() {
+    // Dispose of the game
+    // todo
   }
 
   addConnectionListeners() {
     const connection = Connection.instance;
-    connection.on(GameEventType.JOIN, this.onGameJoin.bind(this));
-    connection.on(GameEventType.LEAVE, this.onGameLeave.bind(this));
-    connection.on(ConnectionEventType.DISCONNECT, this.onGameLeave.bind(this));
-    connection.on(GameEventType.START, this.onGameStart.bind(this));
-    connection.on(GameEventType.ANSWER, this.onGameAnswer.bind(this));
-    connection.on(GameEventType.SETUP, this.onGameRoundSetup.bind(this));
-    connection.on(GameEventType.RESULT, this.onGameResult.bind(this));
-    connection.on(GameEventType.END, this.onGameEnd.bind(this));
+    // connection.on(GameEventType.START, this.onGameStart.bind(this)); // Make  a route
+    // connection.on(GameEventType.ANSWER, this.onGameAnswer.bind(this)); // Make a route
+
+    connection.on(GameEventType.SETUP, this.onGameRoundSetup.bind(this)); // Be -> Fe
+    connection.on(GameEventType.RESULT, this.onGameResult.bind(this)); // Be -> Fe
+    connection.on(GameEventType.END, this.onGameEnd.bind(this)); // Be -> Fe
   }
 
-  async onGameJoin(socketID, roomID) {
-    if (roomID !== this.roomID) return;
+  async onGameJoin(socketID, gameID) {
+    if (gameID !== this.gameID) return;
 
     const user = new User.Full(await UserHandler.getUserBySocketID(socketID));
 
@@ -71,7 +171,7 @@ class Game {
     UserSchema.updateOne({ socketID: socketID }, { currentRoom: this.roomID });
 
     // Tell the user they joined the game
-    const socket = Connection.sockets[socketID];
+    const socket = Connection.getSocket(socketID);
 
     socket.join(this.roomID);
 
@@ -111,9 +211,9 @@ class Game {
     }
 
     // Restart the Game with current Settings
-    if (this.currentRound === this.gameRounds) {
-      this.currentRound = 0;
-      this.spectators.forEach((spectator) => this.players.push(spectator));
+    if (this.roundIndex === this.numberOfRounds) {
+      this.roundIndex = 0;
+      this.players.push(this.spectators);
       this.spectators = [];
       this.players.forEach((player) => {
         player.gamePoints = [];
@@ -129,7 +229,8 @@ class Game {
   async onGameRoundSetup() {
     const question = await this.getQuestions();
     if (question !== "end") {
-      question.lastRound = this.currentRound === this.gameRounds ? true : false;
+      question.lastRound =
+        this.roundIndex === this.numberOfRounds ? true : false;
 
       Connection.instance.io
         .to(this.roomID)
@@ -162,8 +263,7 @@ class Game {
 
     this.players.forEach((player) => {
       player.answered ? null : player.answers.push(6);
-      player.answers &&
-      player.answers[this.currentRound - 1] === this.correctAnswer
+      player.answers && player.answers[this.roundIndex - 1] === this.answerIndex
         ? roundRanking.push({
             userID: player.userID,
             correctAnswer: true,
@@ -231,7 +331,7 @@ class Game {
       ? `&category=${this.getCategoryID(this.category)}`
       : "";
 
-    if (this.currentRound < this.gameRounds) {
+    if (this.roundIndex < this.numberOfRounds) {
       // Build URL from Options
 
       const url = `https://opentdb.com/api.php?amount=1${
@@ -252,19 +352,19 @@ class Game {
 
       question.answers = questionFetch.incorrect_answers;
 
-      this.correctAnswer = Math.floor(
+      this.answerIndex = Math.floor(
         Math.random() * (question.answers.length - 1)
       );
 
       question.answers.splice(
-        this.correctAnswer,
+        this.answerIndex,
         0,
         questionFetch.correct_answer
       );
 
-      console.log("CORRECT", this.correctAnswer);
+      console.log("CORRECT", this.answerIndex);
 
-      this.currentRound++;
+      this.roundIndex++;
       return question;
     } else {
       return "end";
