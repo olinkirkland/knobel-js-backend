@@ -7,6 +7,7 @@ const UserHandler = require("../controllers/UserHandler");
 const Arcade = require("../game/Arcade");
 
 const UserSchema = require("../models/UserSchema");
+const { GameMode } = require("../game/Game");
 
 router.get("/list", (req, res) => {
   res.send(Arcade.games.map((game) => game.toListItem()));
@@ -55,6 +56,28 @@ router.get("/:id", JWT.check, (req, res) => {
 router.get("/categories", JWT.check, (req, res) => {
   // Return available question categories
   res.send(gameHandler.categoriesCatalog());
+});
+
+router.post("/start", JWT.check, async (req, res) => {
+  // Start a game
+  console.log(req.body);
+  const user = await UserHandler.getUserById(req.body.userID);
+  console.log(user.username, "is starting the game", user.gameID, "...");
+
+  // Is the user in a game?
+  if (!user.gameID) return res.status(500).send("User is not in a game");
+
+  // Is the user the host of the game?
+  const game = Arcade.getGame(user.gameID);
+  if (!game.hostUser.userID === user.userID)
+    return res.status(500).send("User is not the host of the game");
+
+  // Is the game already started?
+  if (game.mode == GameMode.GAME)
+    return res.status(500).send("Game is already started");
+
+  // Start the game
+  game.start();
 });
 
 router.post("/answer", JWT.check, async (req, res) => {
