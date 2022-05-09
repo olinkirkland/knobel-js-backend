@@ -103,7 +103,7 @@ class Game {
     // Restart the Game with current Settings
     if (this.currentRound === this.gameRounds) {
       this.currentRound = 0;
-      this.players.push(this.spectators);
+      this.spectators.forEach((spectator) => this.players.push(spectator));
       this.spectators = [];
       this.players.forEach((player) => {
         player.gamePoints = [];
