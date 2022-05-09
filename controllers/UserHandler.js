@@ -62,7 +62,7 @@ async function createNewUser(password, isGuest, email) {
 }
 
 async function getUserSchemaById(id) {
-  return (await UserSchema.find({ id: id }))[0];
+  return await UserSchema.findOne({ id: id });
 }
 
 async function getUserById(id) {
@@ -73,29 +73,28 @@ async function getUserById(id) {
 async function getFullUserById(id) {
   // Get Userdata from users-Collection without critical data, like Password
 
-  const user = await UserSchema.find({ id: id }).catch(() => "Error");
-  console.log(user);
+  const user = await UserSchema.findOne({ id: id }).catch(() => "Error");
   return user === "Error" || user === null
     ? "Error: ID invalid!"
-    : new Full(user[0]);
+    : new Full(user);
 }
 
 async function getMediumUserById(id) {
   // Get Userdata from users-Collection without critical data, like Password
 
-  const user = await UserSchema.find({ id: id }).catch(() => "Error");
+  const user = await UserSchema.findOne({ id: id }).catch(() => "Error");
   return user === "Error" || user === null
     ? "Error: ID invalid!"
-    : new User.Medium(user[0]);
+    : new User.Medium(user);
 }
 
 async function getSmallUserById(id) {
   // Get Userdata from users-Collection without critical data, like Password
 
-  const user = await UserSchema.find({ id: id }).catch(() => "Error");
+  const user = await UserSchema.findOne({ id: id }).catch(() => "Error");
   return user[0] === "Error" || user[0] === null
     ? "Error: ID invalid!"
-    : new User.Small(user[0]);
+    : new User.Small(user);
 }
 
 async function getUserSchemaBySocketID(socketID) {
@@ -109,7 +108,7 @@ async function getUserSchemaBySocketID(socketID) {
 
 async function getUserByMail(email) {
   // Get all Userdata´s from users-Collection, including critical data (like Password)
-  return await UserSchema.find({ email: email });
+  return await UserSchema.findOne({ email: email });
 }
 
 async function deleteUser(id) {
@@ -312,21 +311,19 @@ async function changeSocketRoom(user, partner) {
     .catch((err) => (error = `Error: ${err}`));
 
   // Get current User-Data and update the Friendslist with the Partnerdata
-  let userDB = (await UserSchema.find({ id: user.userID }))[0];
+  let userDB = await UserSchema.findOne({ id: user.userID });
   userDB.friends.push({
     userID: partner.userID,
     username: partner.username,
     friendsID: friendsID
   });
-  (
-    await UserSchema.find(
-      { id: user.userID },
-      { friends: userDB.friends }
-    ).catch((err) => (error = `Error: ${err}`))
-  )[0];
+  await UserSchema.findOne(
+    { id: user.userID },
+    { friends: userDB.friends }
+  ).catch((err) => (error = `Error: ${err}`));
 
   // Get current Partner-Data and update the Friendslist with the User-data
-  let partnerDB = (await UserSchema.find({ id: partner.userID }))[0];
+  let partnerDB = await UserSchema.findOne({ id: partner.userID });
   partnerDB.friends
     .push({
       userID: user.userID,
