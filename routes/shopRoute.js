@@ -27,9 +27,7 @@ router.post("/buy", JWT.check, async (req, res) => {
   }
 
   if (user.gold >= item.cost) {
-    console.log(user.inventory);
     user.inventory.push(item.id);
-    console.log(user.inventory);
     user.gold = user.gold - item.cost;
     await UserSchema.updateOne(
       { id: user.id },
