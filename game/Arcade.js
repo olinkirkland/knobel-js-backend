@@ -87,7 +87,7 @@ function leaveGame(user) {
     );
   }
 
-  if (user.id === game.hostUser.id) {
+  if (user.id === game.hostUser.id && game.players.length < 0) {
     // If the host left, pick a new host
     game.hostUser = getUserSchemaBySocketID(game.players[0].socketID);
   }
