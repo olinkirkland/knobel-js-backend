@@ -36,7 +36,7 @@ class Connection extends EventEmitter {
 
   static invalidateUserBySocketID(socketID) {
     if (!socketID) return;
-    Connection.getSocket(socketID).emit(ConnectionEventType.INVALIDATE);
+    Connection.getSocket(socketID)?.emit(ConnectionEventType.INVALIDATE);
   }
 
   static getSocket(id) {
