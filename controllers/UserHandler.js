@@ -163,12 +163,7 @@ async function updateUser(
 
     if (newSkin) {
       // If User wants to change the Skin, no Pasword is required
-      (
-        await UserSchema.findByIdAndUpdate(
-          { _id: id },
-          { currentSkin: newSkin }
-        )
-      )[0];
+      await UserSchema.updateOne({ id: id }, { currentSkin: newSkin });
     }
 
     if (newAvatar) {

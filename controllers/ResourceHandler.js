@@ -5,7 +5,7 @@ const { Connection } = require("./Connection");
 
 async function giveItem(userId, itemId) {
   // Get the user's current inventory
-  const userSchema = await UserSchema.findById(userId);
+  const userSchema = await UserSchema.findOne({ id: userId });
   userSchema.inventory.push(itemId);
   userSchema.save();
 
@@ -19,7 +19,7 @@ async function giveItem(userId, itemId) {
 
 async function giveExperience(userId, amount) {
   // Add an amount of experience to the user's experience
-  const userSchema = await UserSchema.findById(userId);
+  const userSchema = await UserSchema.findOne({ id: userId });
   let experience = parseInt(userSchema.experience);
 
   console.log(
@@ -55,7 +55,7 @@ function giveLevelUpRewards(userSchema) {
 
 async function giveGold(userId, amount) {
   // Add an amount of gold to the user's gold
-  const userSchema = await UserSchema.findById(userId);
+  const userSchema = await UserSchema.findOne({ id: userId });
   let gold = parseInt(userSchema.gold);
 
   console.log(
