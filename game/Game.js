@@ -160,6 +160,7 @@ class Game {
 
     // Subscribe the player's socket to the gameID room so they are included in game broadcasts
     player.socket.join(this.gameID);
+    setTimeout(this.invalidateGameData.bind(this));
 
     this.players.push(player);
   }
