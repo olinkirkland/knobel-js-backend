@@ -11,7 +11,6 @@ router.get("/list", (req, res) => {
 });
 
 router.post("/host", JWT.check, async (req, res) => {
-  console.log(req.body);
   const user = await UserHandler.getUserById(req.body.userID);
   const gameOptions = req.body.gameOptions;
 

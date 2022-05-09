@@ -1,7 +1,7 @@
 class User {
   constructor(userSchema, token) {
     // General
-    this.id = userSchema._id.toString(); // The user's id, used to lookup in DB
+    this.id = userSchema.id; // The user's id, used to lookup in DB
     this.username = userSchema.username; // The user's username, chosen by the user
     this.email = userSchema.email; // The user's email address
     this.isGuest = userSchema.isGuest; // Whether the user is a guest or not

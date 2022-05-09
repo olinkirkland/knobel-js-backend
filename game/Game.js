@@ -87,6 +87,8 @@ class Game {
     user.gameID = this.gameID;
 
     UserHandler.getUserSchemaById(user.id).then((userSchema) => {
+      console.log(user.id);
+      console.log(userSchema);
       userSchema.currentRoom = this.gameID;
       userSchema.save();
 
