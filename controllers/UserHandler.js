@@ -62,34 +62,35 @@ async function createNewUser(password, isGuest, email) {
 }
 
 async function getUserSchemaById(id) {
-  return await UserSchema.findById(id);
+  return (await UserSchema.find({ id: id }))[0];
 }
 
 async function getFullUserById(id) {
   // Get Userdata from users-Collection without critical data, like Password
 
-  const user = await UserSchema.findById(id).catch(() => "Error");
+  const user = await UserSchema.find({ id: id }).catch(() => "Error");
+  console.log(user);
   return user === "Error" || user === null
     ? "Error: ID invalid!"
-    : new User.Full(user);
+    : new User.Full(user[0]);
 }
 
 async function getMediumUserById(id) {
   // Get Userdata from users-Collection without critical data, like Password
 
-  const user = await UserSchema.findById(id).catch(() => "Error");
+  const user = await UserSchema.find({ id: id }).catch(() => "Error");
   return user === "Error" || user === null
     ? "Error: ID invalid!"
-    : new User.Medium(user);
+    : new User.Medium(user[0]);
 }
 
 async function getSmallUserById(id) {
   // Get Userdata from users-Collection without critical data, like Password
 
-  const user = await UserSchema.findById(id).catch(() => "Error");
-  return user === "Error" || user === null
+  const user = await UserSchema.find({ id: id }).catch(() => "Error");
+  return user[0] === "Error" || user[0] === null
     ? "Error: ID invalid!"
-    : new User.Small(user);
+    : new User.Small(user[0]);
 }
 
 async function getUserBySocketID(socketID) {
@@ -108,7 +109,7 @@ async function getUserByMail(email) {
 
 async function deleteUser(id) {
   // Delete a User from users-Collection
-  const deletedCount = (await UserSchema.deleteOne({ _id: id })).deletedCount;
+  const deletedCount = (await UserSchema.deleteOne({ id: id })).deletedCount;
   return deletedCount === 0 ? false : true;
 }
 
@@ -134,10 +135,7 @@ async function updateUser(
   if (user !== null) {
     // If User wants to change the Username, no Pasword is required
     if (newUsername) {
-      await UserSchema.findByIdAndUpdate(
-        { _id: id },
-        { username: newUsername }
-      );
+      await UserSchema.updateOne({ id: id }, { username: newUsername });
     }
 
     if (newPassword) {
@@ -149,8 +147,8 @@ async function updateUser(
       );
 
       if (check) {
-        await UserSchema.findByIdAndUpdate(
-          { _id: id },
+        await UserSchema.updateOne(
+          { id: id },
           { password: Password.encrypt(newPassword) }
         );
       } else {
@@ -160,25 +158,27 @@ async function updateUser(
 
     if (newSkin) {
       // If User wants to change the Skin, no Pasword is required
-      await UserSchema.findByIdAndUpdate({ _id: id }, { currentSkin: newSkin });
+      (
+        await UserSchema.findByIdAndUpdate(
+          { _id: id },
+          { currentSkin: newSkin }
+        )
+      )[0];
     }
 
     if (newAvatar) {
-      await UserSchema.findByIdAndUpdate(
-        { _id: id },
-        { currentAvatar: newAvatar }
-      );
+      await UserSchema.updateOne({ id: id }, { currentAvatar: newAvatar });
     }
 
     if (newWallpaper) {
-      await UserSchema.findByIdAndUpdate(
-        { _id: id },
+      await UserSchema.updateOne(
+        { id: id },
         { currentWallpaper: newWallpaper }
       );
     }
 
     if (newStatus) {
-      await UserSchema.findByIdAndUpdate({ _id: id }, { status: newStatus });
+      await UserSchema.updateOne({ id: id }, { status: newStatus });
     }
 
     if (newEmail) {
@@ -190,8 +190,8 @@ async function updateUser(
       );
 
       if (check) {
-        await UserSchema.findByIdAndUpdate(
-          { _id: id },
+        await UserSchema.updateOne(
+          { id: id },
           { email: newEmail.toLowerCase() }
         );
         console.log("user", user.username, "changed their Email to", newEmail);
@@ -225,8 +225,8 @@ async function upgradeGuest(email, password, id) {
   const hashed = Password.encrypt(password);
 
   if (user !== null) {
-    await UserSchema.findByIdAndUpdate(
-      { _id: id },
+    await UserSchema.updateOne(
+      { id: id },
       { password: hashed, email: email, isGuest: false, nameChanges: 1 }
     );
 
@@ -245,7 +245,7 @@ async function upgradeGuest(email, password, id) {
 
 async function updateToken(id, token) {
   // Return a new Token, if the old one is expired
-  await UserSchema.findByIdAndUpdate({ _id: id }, { token: token });
+  await UserSchema.updateOne({ id: id }, { token: token });
 }
 
 async function changeOnlineState(data, socketID) {
@@ -265,8 +265,8 @@ async function changeOnlineState(data, socketID) {
   if (user !== null) {
     // Update users-Collection >>> Change isOnline-Boolean = true
     if (data.online) {
-      await UserSchema.findByIdAndUpdate(
-        { _id: user.id },
+      await UserSchema.updateOne(
+        { id: user.id },
         { isOnline: data.online, socketID: socketID }
       );
     }
@@ -276,8 +276,8 @@ async function changeOnlineState(data, socketID) {
         deleteUser(currentUser.id);
       } else {
         // Update users-Collection >>> Change isOnline-Boolean = false
-        await UserSchema.findByIdAndUpdate(
-          { _id: currentUser._id },
+        await UserSchema.updateOne(
+          { id: currentUser._id },
           { isOnline: data.online, socketID: "" }
         );
       }
@@ -313,19 +313,21 @@ async function changeSocketRoom(user, partner) {
     .catch((err) => (error = `Error: ${err}`));
 
   // Get current User-Data and update the Friendslist with the Partnerdata
-  let userDB = await UserSchema.findById({ _id: user.userID });
+  let userDB = (await UserSchema.find({ id: user.userID }))[0];
   userDB.friends.push({
     userID: partner.userID,
     username: partner.username,
     friendsID: friendsID
   });
-  await UserSchema.findByIdAndUpdate(
-    { _id: user.userID },
-    { friends: userDB.friends }
-  ).catch((err) => (error = `Error: ${err}`));
+  (
+    await UserSchema.find(
+      { id: user.userID },
+      { friends: userDB.friends }
+    ).catch((err) => (error = `Error: ${err}`))
+  )[0];
 
   // Get current Partner-Data and update the Friendslist with the User-data
-  let partnerDB = await UserSchema.findById({ _id: partner.userID });
+  let partnerDB = (await UserSchema.find({ id: partner.userID }))[0];
   partnerDB.friends
     .push({
       userID: user.userID,

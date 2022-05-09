@@ -1,94 +1,98 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
   username: {
     type: String,
-    required: true,
+    required: true
+  },
+  id: {
+    type: String,
+    required: true
   },
   email: {
     type: String,
-    required: true,
+    required: true
   },
   password: {
     type: String,
-    required: true,
+    required: true
   },
   token: {
     type: String,
-    required: true,
+    required: true
   },
   currentSkin: {
     type: String,
-    required: true,
+    required: true
   },
   experience: {
     type: Number,
-    required: true,
+    required: true
   },
   gold: {
     type: Number,
-    required: true,
+    required: true
   },
   level: {
     type: Number,
-    required: true,
+    required: true
   },
   isOnline: {
     type: Boolean,
-    required: true,
+    required: true
   },
   isGuest: {
     type: Boolean,
-    required: true,
+    required: true
   },
   friends: {
     type: Array,
-    required: true,
+    required: true
   },
   friendRequestsIncoming: {
     type: Array,
-    required: true,
+    required: true
   },
   friendRequestsOutgoing: {
     type: Array,
-    required: true,
+    required: true
   },
   lastLoggedIn: {
     type: Number,
-    required: false,
+    required: false
   },
   socketID: {
     type: String,
-    required: false,
+    required: false
   },
   currentRoom: {
     type: String,
-    required: false,
+    required: false
   },
   nameChanges: {
     required: true,
-    type: Number,
+    type: Number
   },
   currentAvatar: {
     required: true,
-    type: String,
+    type: String
   },
   currentWallpaper: {
     required: true,
-    type: String,
+    type: String
   },
   status: {
     required: true,
-    type: String,
+    type: String
   },
   inventory: {
     type: Array,
-    required: true,
+    required: true
   }
 });
 
-const User = mongoose.model('User', userSchema);
+const User = mongoose.model("User", userSchema);
 
 module.exports = User;

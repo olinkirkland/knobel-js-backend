@@ -1,29 +1,29 @@
-const { v4: uuidv4 } = require('uuid');
-const UserSchema = require('../models/UserSchema');
-const Friends = require('../models/FriendsSchema');
-const { Socket } = require('socket.io');
+const { v4: uuidv4 } = require("uuid");
+const UserSchema = require("../models/UserSchema");
+const Friends = require("../models/FriendsSchema");
+const { Socket } = require("socket.io");
 
 async function createRequest(requestGiver, requestTarget) {
-  let error = '';
+  let error = "";
 
   /*    ****    ****    ****    */
   /*    Update  requestGiver    */
   /*    ****    ****    ****    */
 
   // Get current Requests to other Users
-  const currentRequestGiver = await UserSchema.findById({
-    _id: requestGiver,
+  const currentRequestGiver = await UserSchema.findOne({
+    id: requestGiver
   }).catch(() => (error = 512));
 
   // Check if Query was successful
-  if (currentRequestGiver == 'undefined' || currentRequestGiver == null)
+  if (currentRequestGiver == "undefined" || currentRequestGiver == null)
     return 400;
   // Add new Request
   currentRequestGiver.friendRequestsOutgoing.push(requestTarget);
 
   // Update DB
-  await UserSchema.findByIdAndUpdate(
-    { _id: requestGiver },
+  await UserSchema.updateOne(
+    { id: requestGiver },
     { friendRequestsOutgoing: currentRequestGiver.friendRequestsOutgoing }
   ).catch((err) => (error = err));
 
@@ -32,19 +32,18 @@ async function createRequest(requestGiver, requestTarget) {
   /*    ****    ****    ****    */
 
   // Get current Requests to other Users
-  const currentRequestTarget = await UserSchema.findById({
-    _id: requestTarget,
+  const currentRequestTarget = await UserSchema.findOne({
+    id: requestTarget
   }).catch(() => (error = 512));
-
   // Check if Query was successful
-  if (currentRequestTarget == 'undefined' || currentRequestTarget == null)
+  if (currentRequestTarget == "undefined" || currentRequestTarget == null)
     return 400;
 
   // Add new Request
   currentRequestTarget.friendRequestsIncoming.push(requestGiver);
   // Update DB
-  await UserSchema.findByIdAndUpdate(
-    { _id: requestTarget },
+  await UserSchema.updateOne(
+    { id: requestTarget },
     { friendRequestsIncoming: currentRequestTarget.friendRequestsIncoming }
   ).catch((err) => (error = err));
 
@@ -55,7 +54,7 @@ async function createRequest(requestGiver, requestTarget) {
   if (requestTarget.isOnline) {
     socket
       .to(requestTarget.socketID)
-      .emit('friend-request-incoming', requestGiver.userID);
+      .emit("friend-request-incoming", requestGiver.userID);
   }
 
   /*    ****    ****    ****    */
@@ -63,28 +62,28 @@ async function createRequest(requestGiver, requestTarget) {
   /*    ****    ****    ****    */
 
   // If an Error occured, return false
-  if (error !== '') return error;
+  if (error !== "") return error;
 
   // Return true, if Request succeeded
   return true;
 }
 
 async function acceptRequest(requestGiver, requestTarget) {
-  let error = '';
+  let error = "";
 
   /*    ****    ****    ****    */
   /*    Update  requestGiver    */
   /*    ****    ****    ****    */
 
   // Get current Requests to other Users
-  const currentRequestGiver = await UserSchema.findById({
-    _id: requestGiver,
+  const currentRequestGiver = await UserSchema.findOne({
+    id: requestGiver
   }).catch(() => (error = 512));
 
-  if (error !== '') return error;
+  if (error !== "") return error;
 
   // Check if Query was successful
-  if (currentRequestGiver == 'undefined' || currentRequestGiver == null)
+  if (currentRequestGiver == "undefined" || currentRequestGiver == null)
     return 400;
 
   // Remove Request
@@ -97,11 +96,11 @@ async function acceptRequest(requestGiver, requestTarget) {
   currentRequestGiver.friends.push(requestTarget);
 
   // Update DB
-  await UserSchema.findByIdAndUpdate(
-    { _id: requestGiver },
+  await UserSchema.updateOne(
+    { id: requestGiver },
     {
       friendRequestsOutgoing: currentRequestGiver.friendRequestsOutgoing,
-      friends: currentRequestGiver.friends,
+      friends: currentRequestGiver.friends
     }
   ).catch((err) => (error = err));
 
@@ -110,12 +109,12 @@ async function acceptRequest(requestGiver, requestTarget) {
   /*    ****    ****    ****    */
 
   // Get current Requests to other Users
-  const currentRequestTarget = await UserSchema.findById({
-    _id: requestTarget,
+  const currentRequestTarget = await UserSchema.findOne({
+    id: requestTarget
   }).catch(() => (error = 512));
 
   // Check if Query was successful
-  if (currentRequestTarget == 'undefined' || currentRequestTarget == null)
+  if (currentRequestTarget == "undefined" || currentRequestTarget == null)
     return 400;
 
   // Remove Request
@@ -128,11 +127,11 @@ async function acceptRequest(requestGiver, requestTarget) {
   currentRequestTarget.friends.push(requestGiver);
 
   // Update DB
-  await UserSchema.findByIdAndUpdate(
-    { _id: requestTarget },
+  await UserSchema.updateOne(
+    { id: requestTarget },
     {
       friendRequestsIncoming: currentRequestTarget.friendRequestsIncoming,
-      friends: currentRequestTarget.friends,
+      friends: currentRequestTarget.friends
     }
   ).catch((err) => (error = err));
 
@@ -142,7 +141,7 @@ async function acceptRequest(requestGiver, requestTarget) {
 
   new Friends({
     friendsID: uuidv4(),
-    users: [requestGiver, requestTarget],
+    users: [requestGiver, requestTarget]
   }).save();
 
   /*    ****    ****    ****    */
@@ -156,28 +155,28 @@ async function acceptRequest(requestGiver, requestTarget) {
   // }
 
   // If an Error occured, return false
-  if (error !== '') return error;
+  if (error !== "") return error;
 
   // Return true, if Request succeeded
   return true;
 }
 
 async function declineRequest(requestGiver, requestTarget) {
-  let error = '';
+  let error = "";
 
   /*    ****    ****    ****    */
   /*    Update  requestGiver    */
   /*    ****    ****    ****    */
 
   // Get current Requests to other Users
-  const currentRequestGiver = await UserSchema.findById({
-    _id: requestGiver,
+  const currentRequestGiver = await UserSchema.findOne({
+    id: requestGiver
   }).catch(() => (error = 512));
 
-  if (error !== '') return error;
+  if (error !== "") return error;
 
   // Check if Query was successful
-  if (currentRequestGiver == 'undefined' || currentRequestGiver == null)
+  if (currentRequestGiver == "undefined" || currentRequestGiver == null)
     return 400;
 
   // Remove Request
@@ -187,10 +186,10 @@ async function declineRequest(requestGiver, requestTarget) {
   );
 
   // Update DB
-  await UserSchema.findByIdAndUpdate(
-    { _id: requestGiver },
+  await UserSchema.updateOne(
+    { id: requestGiver },
     {
-      friendRequestsOutgoing: currentRequestGiver.friendRequestsOutgoing,
+      friendRequestsOutgoing: currentRequestGiver.friendRequestsOutgoing
     }
   ).catch((err) => (error = err));
 
@@ -199,12 +198,12 @@ async function declineRequest(requestGiver, requestTarget) {
   /*    ****    ****    ****    */
 
   // Get current Requests to other Users
-  const currentRequestTarget = await UserSchema.findById({
-    _id: requestTarget,
+  const currentRequestTarget = await UserSchema.findOne({
+    id: requestTarget
   }).catch(() => (error = 512));
 
   // Check if Query was successful
-  if (currentRequestTarget == 'undefined' || currentRequestTarget == null)
+  if (currentRequestTarget == "undefined" || currentRequestTarget == null)
     return 400;
 
   // Remove Request
@@ -214,10 +213,10 @@ async function declineRequest(requestGiver, requestTarget) {
   );
 
   // Update DB
-  await UserSchema.findByIdAndUpdate(
-    { _id: requestTarget },
+  await UserSchema.updateOne(
+    { id: requestTarget },
     {
-      friendRequestsIncoming: currentRequestTarget.friendRequestsIncoming,
+      friendRequestsIncoming: currentRequestTarget.friendRequestsIncoming
     }
   ).catch((err) => (error = err));
 
@@ -232,7 +231,7 @@ async function declineRequest(requestGiver, requestTarget) {
   // }
 
   // If an Error occured, return false
-  if (error !== '') return error;
+  if (error !== "") return error;
 
   // Return true, if Request succeeded
   return true;

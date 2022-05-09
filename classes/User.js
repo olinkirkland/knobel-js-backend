@@ -22,7 +22,7 @@ class User {
 // Minimal public-facing user data
 class Small {
   constructor(data) {
-    this.id = data._id.valueOf();
+    this.id = data.id;
     this.username = data.username;
     this.currentAvatar = data.currentAvatar;
     this.level = data.level;

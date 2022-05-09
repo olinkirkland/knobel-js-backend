@@ -145,9 +145,10 @@ router.post("/update", JWT.check, (req, res) => {
 
 router.get("/:id", JWT.check, (req, res) => {
   // Send a User-Model to the FrontEnd, without critical Data like Password
-  UserHandler.getFullUserById(req.params.id).then((response) =>
-    res.send(response)
-  );
+  UserHandler.getFullUserById(req.params.id).then((response) => {
+    console.log(response);
+    res.send(response);
+  });
 });
 
 router.post("/multi/medium", JWT.check, async (req, res) => {
