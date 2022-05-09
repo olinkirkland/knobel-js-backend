@@ -13,7 +13,7 @@ const { Connection } = require("../controllers/Connection");
 
 router.post("/buy", JWT.check, async (req, res) => {
   if (!req.body.userID || !req.body.itemID) {
-    res.status(400).send("Bad Request - UserID, ItemID requiered!");
+    res.status(400).send("Bad Request - UserID requiered!");
     return;
   }
 
@@ -23,7 +23,7 @@ router.post("/buy", JWT.check, async (req, res) => {
   const item = shop.avatars.find((item) => item.id === itemID);
 
   if (!item || item === "undefined" || item == null) {
-    res.status(400).send("Bad Request - UserID, ItemID requiered!");
+    res.status(400).send("Bad Request - ItemID requiered!");
     return;
   }
 
