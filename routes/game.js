@@ -6,6 +6,8 @@ const gameHandler = require("../game/GameData");
 const UserHandler = require("../controllers/UserHandler");
 const Arcade = require("../game/Arcade");
 
+const UserSchema = require("../models/UserSchema");
+
 router.get("/list", (req, res) => {
   res.send(Arcade.games.map((game) => game.toListItem()));
 });
@@ -53,6 +55,22 @@ router.get("/:id", JWT.check, (req, res) => {
 router.get("/categories", JWT.check, (req, res) => {
   // Return available question categories
   res.send(gameHandler.categoriesCatalog());
+});
+
+router.post("/answer", JWT.check, async (req, res) => {
+  const answer = req.body.answer;
+  const userID = req.body.userID;
+
+  const user = await UserSchema.findOne({ id: userID }).catch((err) =>
+    console.error("Error at Answer:", err)
+  );
+
+  Arcade.games
+    .find((game) => game.gameID === user.currentRoom)
+    .players.find((player) => player.user.id === user.id)
+    .answers.push(answer);
+
+  res.status(201).send("Done");
 });
 
 module.exports = { router };

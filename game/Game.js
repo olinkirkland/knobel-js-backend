@@ -81,7 +81,9 @@ class Game {
     const player = {
       user: user,
       isPlaying: false,
-      socket: Connection.getSocket(user.socketID)
+      socket: Connection.getSocket(user.socketID),
+      gamePoints: [],
+      answers: []
     };
 
     user.gameID = this.gameID;
