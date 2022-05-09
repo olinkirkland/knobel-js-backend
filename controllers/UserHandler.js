@@ -16,7 +16,9 @@ Connection.instance.on(ConnectionEventType.CONNECT, (socketID, data) => {
 });
 
 Connection.instance.on(ConnectionEventType.DISCONNECT, (socketID) => {
-  changeOnlineState({ online: false }, socketID);
+  setTimeout(() => {
+    changeOnlineState({ online: false }, socketID);
+  }, 1000);
 });
 
 async function createNewUser(password, isGuest, email) {

@@ -113,8 +113,9 @@ class Connection extends EventEmitter {
       socket.on("disconnect", () => {
         // A socket disconnected
         console.log("💀", "Socket disconnected:", socket.id);
-        if (Connection.sockets[socket.id]) delete Connection.sockets[socket.id];
         this.emit(ConnectionEventType.DISCONNECT, socket.id);
+
+        if (Connection.sockets[socket.id]) delete Connection.sockets[socket.id];
         this.updateOnlineUsersCount();
       });
     });

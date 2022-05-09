@@ -101,7 +101,8 @@ class Game {
   endRound() {
     // Award players with their points
     this.players.forEach((player) => {
-      if (player.answer === answer) player.points += 5;
+      // if (player.answer === answer) player.points += 5;
+      player.points += Math.floor(Math.random(5));
     });
 
     // End the round
