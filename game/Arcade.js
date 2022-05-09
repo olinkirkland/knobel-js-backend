@@ -5,13 +5,13 @@ const {
   ConnectionEventType
 } = require("../controllers/Connection");
 const { getUserSchemaBySocketID } = require("../controllers/UserHandler");
-const Game = require("./Game");
+const { Game } = require("./Game");
 
 const games = [];
 
 Connection.instance.on(ConnectionEventType.DISCONNECT, (socketID, data) => {
   // A user disconnected, remove them from any game they are in
-  
+
   const userSchema = getUserSchemaBySocketID(socketID).then((userSchema) => {
     if (!userSchema) return;
     const user = new User(userSchema);
@@ -56,7 +56,7 @@ function joinGame(user, gameID) {
   // Add user to game
   game.addPlayer(user);
   Connection.instance.io.to(gameID).emit(GameEventType.INVALIDATE);
-  
+
   console.log(`🎮 User ${user.username} joined game ${gameID}`);
   return true;
 }

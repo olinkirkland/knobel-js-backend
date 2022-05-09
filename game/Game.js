@@ -43,7 +43,6 @@ class Game {
 
     this.numberOfRounds = options.numberOfRounds ? options.numberOfRounds : 10; // Number of rounds to play
     this.roundIndex = 0; // Current round index
-    this.answerIndex;
     this.question;
 
     this.timer;
@@ -56,6 +55,54 @@ class Game {
     setInterval(() => {
       this.broadcast(GameEventType.INVALIDATE);
     }, 5000);
+  }
+
+  start() {
+    // Start the game
+    this.gameMode = Mode.GAME;
+
+    // Start the Game with current options
+    this.roundIndex = 0;
+    this.spectators = [];
+    this.players.forEach((player) => {
+      player.gamePoints = [];
+      player.answers = [];
+      player.isPlaying = true;
+    });
+
+    console.log("🎮", "Game", `'${this.name}'`, "started");
+
+    this.setupNextRound();
+  }
+
+  setupNextRound() {
+    // Setup for the next game round
+    this.roundIndex++;
+    if (this.roundIndex > this.numberOfRounds) {
+      this.endGame();
+      return;
+    }
+
+    // const question = this.getQuestions();
+    // question.lastRound = this.roundIndex === this.numberOfRounds ? true : false;
+
+    this.broadcast(GameEventType.SETUP, {
+      roundIndex: this.roundIndex,
+      question: {
+        question: "What color is the sky?",
+        answers: ["blue", "red", "green", "yellow"]
+      }
+    });
+
+    this.timer = setTimeout(endRound(), 1000 * this.timeoutQuestion);
+  }
+
+  endRound() {
+    // Tally up the scores
+    const scores = [];
+
+    // End the round
+    this.broadcast(GameEventType.END_ROUND, { results: scores });
   }
 
   toListItem() {
@@ -137,116 +184,14 @@ class Game {
     Connection.instance.io.to(this.gameID).emit(event, data);
   }
 
+  addConnectionListeners() {
+    const connection = Connection.instance;
+    connection.on(GameEventType.MOVE_CURSOR, this.onMoveCursor.bind(this));
+  }
+
   dispose() {
     // Dispose of the game
     // todo
-  }
-
-  addConnectionListeners() {
-    const connection = Connection.instance;
-    // connection.on(GameEventType.START, this.onGameStart.bind(this)); // Make  a route
-    // connection.on(GameEventType.ANSWER, this.onGameAnswer.bind(this)); // Make a route
-
-    connection.on(GameEventType.SETUP, this.onGameRoundSetup.bind(this)); // Be -> Fe
-    connection.on(GameEventType.RESULT, this.onGameResult.bind(this)); // Be -> Fe
-    connection.on(GameEventType.END, this.onGameEnd.bind(this)); // Be -> Fe
-  }
-
-  async onGameJoin(socketID, gameID) {
-    if (gameID !== this.gameID) return;
-
-    const user = new User.Full(await UserHandler.getUserBySocketID(socketID));
-
-    const player = {
-      userID: user.id,
-      socketID: socketID,
-      username: user.username,
-      level: user.level,
-      experience: user.experience,
-      gamePoints: [],
-      answers: [],
-      isPlaying: false // Upon joining, a player is not playing until the next time game-start is called
-    };
-
-    console.log("🎮", user.username, "joined game", `'${this.roomID}'`);
-    this.players.push(player);
-
-    // Update User-currentRoom in DB //? Neccessary?
-    UserSchema.updateOne({ socketID: socketID }, { currentRoom: this.roomID });
-
-    // Tell the user they joined the game
-    const socket = Connection.getSocket(socketID);
-
-    socket.join(this.roomID);
-
-    Connection.instance.io.to(this.roomID).emit(GameEventType.JOINED, {
-      userID: user.id, // User that joined
-      gameID: this.roomID,
-      playerIDs: this.players.map((el) => el.userID)
-    });
-  }
-
-  async onGameLeave(socketID) {
-    const user = new User.Full(await UserHandler.getUserBySocketID(socketID));
-
-    console.log("🎮", user.username, "left game", `'${this.roomID}'`);
-
-    // Remove player with userID == user.id from players
-    this.players = this.players.filter((el) => el.userID !== user.id);
-
-    const socket = Connection.getSocket(socketID);
-    Connection.instance.io.to(this.roomID).emit(GameEventType.LEFT, {
-      userID: user.id, // User that left
-      playerIDs: this.players.map((el) => el.userID)
-    });
-
-    if (socket) socket.leave(this.roomID);
-
-    // Update DB
-    UserSchema.updateOne({ socketID: socketID }, { currentRoom: "-1" });
-  }
-
-  async onGameStart(socketID) {
-    const user = new User.Full(await UserHandler.getUserBySocketID(socketID));
-
-    // Only the host can start the game
-    if (user.id !== this.hostID) {
-      return;
-    }
-
-    // Restart the Game with current Settings
-    if (this.roundIndex === this.numberOfRounds) {
-      this.roundIndex = 0;
-      this.players.push(this.spectators);
-      this.spectators = [];
-      this.players.forEach((player) => {
-        player.gamePoints = [];
-        player.answers = [];
-      });
-    }
-
-    console.log("🎮", "Game", `'${this.name}'`, "started");
-
-    this.onGameRoundSetup();
-  }
-
-  async onGameRoundSetup() {
-    const question = await this.getQuestions();
-    if (question !== "end") {
-      question.lastRound =
-        this.roundIndex === this.numberOfRounds ? true : false;
-
-      Connection.instance.io
-        .to(this.roomID)
-        .emit(GameEventType.SETUP, question);
-
-      this.timer = setTimeout(
-        () => this.onGameResult(),
-        1000 * this.timeoutQuestion
-      );
-    } else {
-      this.onGameEnd();
-    }
   }
 
   async onGameAnswer(socketID, data) {
@@ -467,4 +412,4 @@ function compareRoundResult(a, b) {
   return 0;
 }
 
-module.exports = Game;
+module.exports = { Game, GameMode: Mode };
