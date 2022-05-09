@@ -76,4 +76,6 @@ router.post("/answer", JWT.check, async (req, res) => {
   res.status(201).send("Done");
 });
 
+router.post("", JWT.check, async (req, res) => {});
+
 module.exports = { router };
