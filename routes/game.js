@@ -39,7 +39,8 @@ router.post("/leave", JWT.check, async (req, res) => {
     : res.status(500).send("Error leaving game");
 });
 
-router.get("/:id", JWT.check, (req, res) => {
+// TODO add JWT.check,
+router.get("/:id", (req, res) => {
   // Return game state, this is called by clients when the game state is invalidated via socket
   const gameID = req.params.id;
   const game = Arcade.getGame(gameID);
@@ -48,7 +49,7 @@ router.get("/:id", JWT.check, (req, res) => {
   if (!game) return res.status(404).send("Game not found");
 
   // Is the user in the game?
-  console.log(req);
+  console.log(req.body);
 
   res.status(200).send(game.toGameState());
 });
