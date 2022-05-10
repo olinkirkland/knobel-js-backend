@@ -272,7 +272,7 @@ async function changeOnlineState(data, socketID) {
     }
 
     if (!data.online) {
-      if (currentUser.isGuest) {
+      if (currentUser && currentUser.isGuest) {
         deleteUser(currentUser.id);
       } else {
         // Update users-Collection >>> Change isOnline-Boolean = false
