@@ -54,6 +54,8 @@ class Game {
   }
 
   start() {
+    if (this.gameMode == Mode.GAME) {console.log('Cannot start the game; game is already started');return;}
+
     // Start the game
     this.gameMode = Mode.GAME;
 
@@ -86,6 +88,7 @@ class Game {
     // const question = this.getQuestions();
     // question.lastRound = this.roundIndex === this.numberOfRounds ? true : false;
 
+    console.log("Setup next round");
     this.invalidateGameData();
 
     this.timer = setTimeout(
@@ -95,6 +98,7 @@ class Game {
   }
 
   invalidateGameData() {
+    console.log("* inval *");
     Connection.instance.io.to(this.gameID).emit(GameEventType.INVALIDATE);
   }
 
@@ -123,16 +127,18 @@ class Game {
       gameID: this.gameID,
       name: this.name,
       host: this.hostUser.toPlayerData(),
-      playerCount: this.players.length,
-      maxPlayers: this.maxPlayers,
-      inProgress: this.gameMode === Mode.GAME
+      playerCount: this.players.length
     };
   }
 
   toGameState() {
     // Return a small object with the game's data representing the full game state
     return {
-      ...this.toListItem()
+      ...this.toListItem(),
+      maxPlayers: this.maxPlayers,
+      gameMode: this.gameMode,
+      roundIndex: this.roundIndex,
+      numberOfRounds: this.numberOfRounds
     };
   }
 
@@ -153,10 +159,9 @@ class Game {
 
       // TODO: Send the following when userSchema.save() is successful
       // for now, wait one second
-      setTimeout(
-        () => Connection.invalidateUserBySocketID(user.socketID),
-        1000
-      );
+      setTimeout(() => {
+        Connection.invalidateUserBySocketID(user.socketID);
+      }, 1000);
     });
 
     // Subscribe the player's socket to the gameID room so they are included in game broadcasts

@@ -49,7 +49,7 @@ router.get("/:id", (req, res) => {
   if (!game) return res.status(404).send("Game not found");
 
   // Is the user in the game?
-  console.log(req.body);
+  // console.log(req.body);
 
   res.status(200).send(game.toGameState());
 });
@@ -61,7 +61,7 @@ router.get("/categories", JWT.check, (req, res) => {
 
 router.post("/start", JWT.check, async (req, res) => {
   // Start a game
-  console.log(req.body);
+  // console.log(req.body);
   const user = await UserHandler.getUserById(req.body.userID);
   console.log(user.username, "is starting the game", user.gameID, "...");
 
