@@ -54,7 +54,10 @@ class Game {
   }
 
   start() {
-    if (this.gameMode == Mode.GAME) {console.log('Cannot start the game; game is already started');return;}
+    if (this.gameMode == Mode.GAME) {
+      console.log("Cannot start the game; game is already started");
+      return;
+    }
 
     // Start the game
     this.gameMode = Mode.GAME;
@@ -69,26 +72,22 @@ class Game {
 
     console.log("🎮", "Game", `'${this.name}'`, "started");
 
-    this.setupNextRound();
+    this.startRound();
   }
 
-  setupNextRound() {
-    // Setup for the next game round
-    this.roundIndex++;
-    if (this.roundIndex > this.numberOfRounds) {
-      this.endGame();
-      return;
-    }
+  startRound() {
+    console.log(`Starting round ${this.roundIndex}/${this.numberOfRounds}`);
 
     // Reset player answers
     this.players.forEach((player) => {
       player.answer = -1;
     });
 
-    // const question = this.getQuestions();
-    // question.lastRound = this.roundIndex === this.numberOfRounds ? true : false;
+    this.question = {
+      prompt: "What is the capital of France?",
+      answers: ["Paris", "Lyon", "Marseille", "Toulouse"]
+    };
 
-    console.log("Setup next round");
     this.invalidateGameData();
 
     this.timer = setTimeout(
@@ -98,7 +97,6 @@ class Game {
   }
 
   invalidateGameData() {
-    console.log("* inval *");
     Connection.instance.io.to(this.gameID).emit(GameEventType.INVALIDATE);
   }
 
@@ -111,6 +109,15 @@ class Game {
 
     // End the round
     console.log("Round Ended!");
+
+    // Increment the round index and check if we need to end the game
+    this.roundIndex++;
+    if (this.roundIndex === this.numberOfRounds) {
+      this.endGame();
+    } else {
+      this.startRound();
+    }
+
     this.broadcast(GameEventType.ROUND_END);
   }
 
@@ -119,6 +126,7 @@ class Game {
     this.gameMode = Mode.LOBBY;
 
     this.broadcast(GameEventType.END_GAME);
+    this.invalidateGameData();
   }
 
   toListItem() {
@@ -137,8 +145,9 @@ class Game {
       ...this.toListItem(),
       maxPlayers: this.maxPlayers,
       gameMode: this.gameMode,
-      roundIndex: this.roundIndex,
-      numberOfRounds: this.numberOfRounds
+      roundIndex: this.roundIndex + 1,
+      numberOfRounds: this.numberOfRounds,
+      question: this.question
     };
   }
 
