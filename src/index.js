@@ -27,7 +27,9 @@ app.use(
       "http://localhost:3000",
       "http://localhost:8000",
       "http://olinkirk.land",
-      "http://olinkirk.land/dont-fall/"
+      "http://olinkirk.land/dont-fall/",
+      "https://olinkirk.land",
+      "https://olinkirk.land/dont-fall/"
     ],
     credentials: true
   })
