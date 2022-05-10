@@ -114,7 +114,8 @@ class Game {
 
     // Increment the round index and check if we need to end the game
     this.roundIndex++;
-    if (this.roundIndex === this.numberOfRounds) {
+    if (this.roundIndex >= this.numberOfRounds) {
+      this.roundIndex = 0;
       this.endGame();
     } else {
       this.startRound();
@@ -146,6 +147,13 @@ class Game {
     return {
       ...this.toListItem(),
       maxPlayers: this.maxPlayers,
+      players: this.players.map((player) => {
+        return {
+          isPlaying: player.isPlaying,
+          state: player.state,
+          user: player.user.toPlayerData()
+        };
+      }),
       gameMode: this.gameMode,
       roundIndex: this.roundIndex + 1,
       numberOfRounds: this.numberOfRounds,
@@ -177,7 +185,7 @@ class Game {
 
     // Subscribe the player's socket to the gameID room so they are included in game broadcasts
     player.socket.join(this.gameID);
-    setTimeout(this.invalidateGameData.bind(this));
+    setTimeout(this.invalidateGameData.bind(this), 200);
 
     this.players.push(player);
   }
