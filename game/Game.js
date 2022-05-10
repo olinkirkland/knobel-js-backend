@@ -367,7 +367,7 @@ class Game {
       //   incorrect_answers: ["Washington D.C.", "Seattle", "Yukon"]
       // };
 
-      this.roundIndex++;
+      // this.roundIndex++;
       return question;
     } else {
       return "end";
