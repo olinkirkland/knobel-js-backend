@@ -10,7 +10,17 @@ function shuffle(array) {
   return array;
 }
 
+function isValidQuestion(q) {
+  const parts = q.incorrect_answers.concat(q.correct_answer);
+  parts.push(q.question);
+  return parts.every((p) => {
+    return true;
+    // TODO return false if there are weird characters in any of the strings
+  });
+}
+
 module.exports = {
   experienceNeededFromLevel,
   shuffle,
+  isValidQuestion
 };
