@@ -49,8 +49,9 @@ class Game {
 
     this.questionDuration = 3; // Questions will be shown for this amount of seconds
     this.resultsDuration = 3; // Round-Results will be shown for this amount of seconds
+    this.tick = 50;
 
-    setInterval(() => this.onGameTick.bind(this), 100);
+    this.onGameTick();
 
     this.addConnectionListeners();
   }
@@ -242,8 +243,10 @@ class Game {
   }
 
   onGameTick() {
-    console.log(tick);
-    this.broadcast(GameEventType.GAME_TICK, this.coordinates);
+    setInterval(() => {
+      console.log("tick");
+      this.broadcast(GameEventType.GAME_TICK, this.coordinates);
+    }, this.tick);
   }
 
   dispose() {
