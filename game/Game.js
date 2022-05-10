@@ -45,13 +45,15 @@ class Game {
     this.roundIndex = 0; // Current round index
     this.question;
 
-    this.coordinates = [];
+    this.coordinates = {}; // Coordinates of player cursors
 
     this.questionDuration = 3; // Questions will be shown for this amount of seconds
     this.resultsDuration = 3; // Round-Results will be shown for this amount of seconds
-    this.tick = 50;
 
-    this.onGameTick();
+    // Broadcast the cursor coordinates to all players every tick
+    this.tickInterval = setInterval(() => {
+      this.broadcast(GameEventType.GAME_TICK, this.coordinates);
+    }, 1000);
 
     this.addConnectionListeners();
   }
@@ -186,9 +188,9 @@ class Game {
 
     // Subscribe the player's socket to the gameID room so they are included in game broadcasts
     player.socket.join(this.gameID);
-    setTimeout(this.invalidateGameData.bind(this), 200);
-
     this.players.push(player);
+
+    setTimeout(this.invalidateGameData.bind(this), 200);
   }
 
   removePlayer(user) {
@@ -226,34 +228,15 @@ class Game {
   }
 
   onMoveCursor(data) {
-    console.time("1");
-    // Move the cursor
+    // Add the cursor coordinates to the list of coordinates
+    // { userID, x, y }
 
-    let target;
-    const player = this.coordinates.find((coord, index) => {
-      target = index;
-      return coord.userID === data.userID;
-    });
-
-    if (player) {
-      player.x = data.x;
-      player.y = data.y;
-    }
-
-    this.coordinates[target] = player;
-    console.timeEnd("1");
-  }
-
-  onGameTick() {
-    setInterval(() => {
-      console.log("tick");
-      this.broadcast(GameEventType.GAME_TICK, this.coordinates);
-    }, this.tick);
+    this.coordinates[data.userID] = { x: data.x, y: data.y };
   }
 
   dispose() {
     // Dispose of the game
-    // todo
+    clearInterval(this.tickInterval);
   }
 
   async onGameAnswer(socketID, data) {
