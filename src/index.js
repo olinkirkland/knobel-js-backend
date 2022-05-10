@@ -23,7 +23,12 @@ connection.connect(app);
 // Middlewares
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://localhost:8000"],
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:8000",
+      "http://olinkirk.land",
+      "http://olinkirk.land/dont-fall/"
+    ],
     credentials: true
   })
 );
