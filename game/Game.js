@@ -21,10 +21,6 @@ class Player {
   state; // Current player state
 }
 
-class PlayerState {
-  coord = { x: 0, y: 0 };
-}
-
 class Game {
   constructor(options, hostUser) {
     this.name = options.name; // Unique name of this game instance
@@ -44,6 +40,7 @@ class Game {
     this.numberOfRounds = options.numberOfRounds ? options.numberOfRounds : 10; // Number of rounds to play
     this.roundIndex = 0; // Current round index
     this.question;
+    this.answerIndex;
 
     this.coordinates = {}; // Coordinates of player cursors
 
@@ -88,10 +85,7 @@ class Game {
       player.answer = -1;
     });
 
-    this.question = {
-      prompt: "What is the capital of France?",
-      answers: ["Paris", "Lyon", "Marseille", "Toulouse"]
-    };
+    this.question = this.getQuestion();
 
     this.invalidateGameData();
 
@@ -239,17 +233,21 @@ class Game {
     clearInterval(this.tickInterval);
   }
 
-  async onGameAnswer(socketID, data) {
-    const user = new User.Small(await UserHandler.getUserBySocketID(socketID));
+  getQuestion() {
+    return {
+      prompt: "What is the capital of France?",
+      answers: ["Paris", "Lyon", "Marseille", "Toulouse"]
+    };
+  }
 
-    console.log("🎮", "User", user.username, "answered");
+  answer(userID, answer) {
+    console.log("Answer", userID, answer);
+    const player = this.players.find((p) => p.userID === userID);
+    if (!player) return;
+    
+    player.state.answer = answer;
 
-    if (!this.players.find((el) => el.socketID === socketID).answered) {
-      this.players
-        .find((el) => el.socketID === socketID)
-        .answers.push(parseInt(data));
-      this.players.find((el) => el.socketID === socketID).answered = true;
-    }
+    this.invalidateGameData();
   }
 
   async onGameResult() {
