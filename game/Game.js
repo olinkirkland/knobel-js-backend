@@ -9,6 +9,7 @@ const User = require("../classes/User");
 const UserSchema = require("../models/UserSchema");
 const axios = require("axios");
 const ResourceHandler = require("../controllers/ResourceHandler");
+const { shuffle } = require("../utils/Util");
 
 class Mode {
   static GAME = "mode-game";
@@ -77,7 +78,7 @@ class Game {
     this.startRound();
   }
 
-  startRound() {
+  async startRound() {
     console.log(`Starting round ${this.roundIndex}/${this.numberOfRounds}`);
 
     // Reset player answers
@@ -85,8 +86,7 @@ class Game {
       player.answer = -1;
     });
 
-    this.assignQuestion();
-
+    await this.assignQuestion();
     this.invalidateGameData();
 
     this.timer = setTimeout(
@@ -110,39 +110,16 @@ class Game {
     console.log("Round Ended!");
 
     // Include the correct answer
+    // this.question.correctAnswer = this.correctAnswer;
 
-    // Apply scores to players
-    const ranks = [];
+    // Apply points to players
     this.players.forEach((player) => {
-      player.answer == this.answer
-        ? ranks.push({
-            userID: player.userID,
-            correctAnswer: true,
-            points: ""
-          })
-        : ranks.push({
-            userID: player.userID,
-            correctAnswer: false,
-            points: 0
-          });
+      // if (player.state.answer === this.answer) player.points += 5;
     });
 
-    for (let i = 0; i < ranks.length; i++) {
-      ranks[i].correctAnswer
-        ? (ranks[i].points = i > 3 ? 10 : 50 - i * 10)
-        : 0;
-    }
+    this.invalidateGameData();
 
-    // Add Points to each Player
-    ranks.forEach((el) =>
-      this.players
-        .find((player) => player.userID === el.userID)
-        ?.gamePoints.push(el.points)
-    );
-
-    ranks.sort(compareRoundResult);
-
-    setTimeout(queueNextRound, this.resultsDuration * 1000);
+    setTimeout(this.queueNextRound.bind(this), this.resultsDuration * 1000);
   }
 
   queueNextRound() {
@@ -268,13 +245,9 @@ class Game {
     clearInterval(this.tickInterval);
   }
 
-  getQuestion() {
-    // return {
-    //   prompt: "What is the capital of France?",
-    //   answers: ["Paris", "Lyon", "Marseille", "Toulouse"]
-    // };
-
-    return this.getQuestions();
+  async assignQuestion() {
+    const q = await this.createQuestion();
+    this.question = q;
   }
 
   submitAnswer(userID, answer) {
@@ -287,85 +260,89 @@ class Game {
     this.invalidateGameData();
   }
 
-  async onGameEnd() {
-    this.players.forEach((player) => {
-      player.gamePoints = player.gamePoints.reduce((pv, cv) => pv + cv, 0);
-    });
+  // async onGameEnd() {
+  //   this.players.forEach((player) => {
+  //     player.gamePoints = player.gamePoints.reduce((pv, cv) => pv + cv, 0);
+  //   });
 
-    const gameRanking = this.players.map((player) => {
-      return { userID: player.userID, points: player.gamePoints };
-    });
+  //   const gameRanking = this.players.map((player) => {
+  //     return { userID: player.userID, points: player.gamePoints };
+  //   });
 
-    // gameRanking.sort(compareGameResult);
-    gameRanking.sort((a, b) =>
-      a.points < b.points ? 1 : b.points < a.points ? -1 : 0
-    );
+  //   // gameRanking.sort(compareGameResult);
+  //   gameRanking.sort((a, b) =>
+  //     a.points < b.points ? 1 : b.points < a.points ? -1 : 0
+  //   );
 
-    for (let i = 0; i < gameRanking; i++) {
-      ResourceHandler.giveExperience(
-        gameRanking[i].userID,
-        i > 3 ? 10 : 50 - i * 10
-      );
-      ResourceHandler.giveGold(gameRanking[i].userID, i > 3 ? 10 : 50 - i * 10);
-    }
+  //   for (let i = 0; i < gameRanking; i++) {
+  //     ResourceHandler.giveExperience(
+  //       gameRanking[i].userID,
+  //       i > 3 ? 10 : 50 - i * 10
+  //     );
+  //     ResourceHandler.giveGold(gameRanking[i].userID, i > 3 ? 10 : 50 - i * 10);
+  //   }
 
-    Connection.instance.io.to(this.roomID).emit(GameEventType.END, gameRanking);
-  }
+  //   Connection.instance.io.to(this.roomID).emit(GameEventType.END, gameRanking);
+  // }
 
-  async getQuestions() {
-    const difficulty = this.difficulty ? `&difficulty=${this.difficulty}` : "";
-    const type = this.gameMode ? `&type=${this.gameMode}` : "&type=multiple";
-    const category = this.category
-      ? `&category=${this.getCategoryID(this.category)}`
-      : "";
+  async createQuestion() {
+    // const difficulty = this.difficulty ? `&difficulty=${this.difficulty}` : "";
+    // const type = this.gameMode ? `&type=${this.gameMode}` : "&type=multiple";
+    // const category = this.category
+    //   ? `&category=${this.getCategoryID(this.category)}`
+    //   : "";
 
-    if (this.roundIndex < this.numberOfRounds) {
-      // Build URL from Options
+    // const url = `https://opentdb.com/api.php?amount=1${
+    //   difficulty + type + category
+    // }`;
 
-      const url = `https://opentdb.com/api.php?amount=1${
-        difficulty + type + category
-      }`;
+    const url = `https://opentdb.com/api.php?amount=1&difficulty=easy`;
 
-      // Fetch Questions
-      const questionFetch = (await axios.get(url)).data.results[0];
+    // Fetch Questions
+    const u = (await axios.get(url)).data.results[0];
+    const q = {
+      prompt: u.question,
+      answers: shuffle(u.incorrect_answers.concat(u.correct_answer))
+    };
 
-      //! Return this:
-      // const question = {
-      //   category: questionFetch.category,
-      //   difficulty: questionFetch.difficulty,
-      //   question: questionFetch.question,
-      //   answers: []
-      // };
-      // this.question = questionFetch;
-      // question.answers = questionFetch.incorrect_answers;
-      // this.answerIndex = Math.floor(
-      //   Math.random() * (question.answers.length - 1)
-      // );
-      // question.answers.splice(
-      //   this.answerIndex,
-      //   0,
-      //   questionFetch.correct_answer
-      // );
-      // console.log("CORRECT", this.answerIndex);
+    q.correctAnswer = q.answers.indexOf(u.correct_answer);
 
-      //! Or return this:
-      const question = questionFetch; //? Comment me out
-      // Looks like that:
-      // {
-      //   category: "Geography",
-      //   type: "multiple",
-      //   difficulty: "medium",
-      //   question:
-      //     "What is the capital of the State of Washington, United States?",
-      //   correct_answer: "Olympia",
-      //   incorrect_answers: ["Washington D.C.", "Seattle", "Yukon"]
-      // };
+    return q;
 
-      // this.roundIndex++;
-      return question;
-    } else {
-      return "end";
-    }
+    //! Return this:
+    // const question = {
+    //   category: questionFetch.category,
+    //   difficulty: questionFetch.difficulty,
+    //   question: questionFetch.question,
+    //   answers: []
+    // };
+    // this.question = questionFetch;
+    // question.answers = questionFetch.incorrect_answers;
+    // this.answerIndex = Math.floor(
+    //   Math.random() * (question.answers.length - 1)
+    // );
+    // question.answers.splice(
+    //   this.answerIndex,
+    //   0,
+    //   questionFetch.correct_answer
+    // );
+    // console.log("CORRECT", this.answerIndex);
+
+    //! Or return this:
+    // const question = u; //? Comment me out
+    // Looks like that:
+    // {
+    //   category: "Geography",
+    //   type: "multiple",
+    //   difficulty: "medium",
+    //   question:
+    //     "What is the capital of the State of Washington, United States?",
+    //   correct_answer: "Olympia",
+    //   incorrect_answers: ["Washington D.C.", "Seattle", "Yukon"]
+    // };
+
+    // this.roundIndex++;
+    // return question;
   }
 }
 
