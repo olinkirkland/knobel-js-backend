@@ -70,7 +70,7 @@ router.post("/start", JWT.check, async (req, res) => {
 
   // Is the user the host of the game?
   const game = Arcade.getGame(user.gameID);
-  if (!game.hostUser.userID === user.userID)
+  if (!game || !game.hostUser || !game.hostUser.userID === user.userID)
     return res.status(500).send("User is not the host of the game");
 
   // Is the game already started?
