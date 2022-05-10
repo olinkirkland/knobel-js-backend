@@ -60,6 +60,12 @@ function joinGame(user, gameID) {
   return true;
 }
 
+function findGameByUserID(userID) {
+  return games.find((game) =>
+    game.players.find((player) => player.user.id === userID)
+  );
+}
+
 function leaveGame(user) {
   console.log(`🎮 ${user.username} is leaving their current game ...`);
 
@@ -108,5 +114,6 @@ module.exports = {
   joinGame,
   leaveGame,
   getGame: getGameByID,
-  games
+  games,
+  findGameByUserID
 };

@@ -86,17 +86,13 @@ router.post("/answer", JWT.check, async (req, res) => {
     typeof req.body.answer === "number"
       ? req.body.answer
       : parseInt(req.body.answer);
+
   const userID = req.body.userID;
+  const game = Arcade.findGameByUserID(userID);
 
-  const user = await UserSchema.findOne({ id: userID }).catch((err) =>
-    console.error("Error at Answer:", err)
-  );
+  if (!game) return res.status(500).send("User is not in a game");
 
-  Arcade.games
-    .find((game) => game.gameID === user.currentRoom)
-    .players.find((player) => player.user.id === user.id)
-    .answers.push(answer);
-
+  game.answer(userID, answer);
   res.status(201).send("Done");
 });
 
