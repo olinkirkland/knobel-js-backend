@@ -355,7 +355,7 @@ class Game {
       // console.log("CORRECT", this.answerIndex);
 
       //! Or return this:
-      const question = questionFetch; //* Comment me out
+      const question = questionFetch; //? Comment me out
       // Looks like that:
       // {
       //   category: "Geography",
