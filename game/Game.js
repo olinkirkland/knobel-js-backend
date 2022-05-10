@@ -100,22 +100,24 @@ class Game {
   }
 
   endRound() {
-    // Award players with their points
+    // Include the correct answer
+    this.question.correctAnswer = this.correctAnswer;
+
+    // Apply points to players
     this.players.forEach((player) => {
-      // if (player.answer === answer) player.points += 5;
-      player.points += Math.floor(Math.random(5));
+      console.log(
+        `Player answered ${player.answer}. Correct answer: ${
+          this.correctAnswer
+        }. Correct? ${player.answer === this.correctAnswer}`
+      );
+      if (player.answer === this.correctAnswer) player.points += 5;
     });
 
     // End the round
     console.log("Round Ended!");
-
-    // Include the correct answer
-    // this.question.correctAnswer = this.correctAnswer;
-
-    // Apply points to players
-    this.players.forEach((player) => {
-      // if (player.state.answer === this.answer) player.points += 5;
-    });
+    console.log(
+      this.players.map((player) => `${player.user.username} - ${player.points}`)
+    );
 
     this.invalidateGameData();
 
@@ -236,7 +238,6 @@ class Game {
   onMoveCursor(data) {
     // Add the cursor coordinates to the list of coordinates
     // { userID, x, y }
-
     this.coordinates[data.userID] = { x: data.x, y: data.y };
   }
 
@@ -247,55 +248,22 @@ class Game {
 
   async assignQuestion() {
     const q = await this.createQuestion();
+    this.correctAnswer = q.correctAnswer;
+    delete q.correctAnswer;
     this.question = q;
   }
 
   submitAnswer(userID, answer) {
-    console.log("Answer", userID, answer);
-    const player = this.players.find((p) => p.userID === userID);
+    console.log(userID, answer);
+    const player = this.players.find((p) => p.user.id === userID);
     if (!player) return;
 
-    player.state.answer = answer;
+    player.answer = answer;
 
     this.invalidateGameData();
   }
 
-  // async onGameEnd() {
-  //   this.players.forEach((player) => {
-  //     player.gamePoints = player.gamePoints.reduce((pv, cv) => pv + cv, 0);
-  //   });
-
-  //   const gameRanking = this.players.map((player) => {
-  //     return { userID: player.userID, points: player.gamePoints };
-  //   });
-
-  //   // gameRanking.sort(compareGameResult);
-  //   gameRanking.sort((a, b) =>
-  //     a.points < b.points ? 1 : b.points < a.points ? -1 : 0
-  //   );
-
-  //   for (let i = 0; i < gameRanking; i++) {
-  //     ResourceHandler.giveExperience(
-  //       gameRanking[i].userID,
-  //       i > 3 ? 10 : 50 - i * 10
-  //     );
-  //     ResourceHandler.giveGold(gameRanking[i].userID, i > 3 ? 10 : 50 - i * 10);
-  //   }
-
-  //   Connection.instance.io.to(this.roomID).emit(GameEventType.END, gameRanking);
-  // }
-
   async createQuestion() {
-    // const difficulty = this.difficulty ? `&difficulty=${this.difficulty}` : "";
-    // const type = this.gameMode ? `&type=${this.gameMode}` : "&type=multiple";
-    // const category = this.category
-    //   ? `&category=${this.getCategoryID(this.category)}`
-    //   : "";
-
-    // const url = `https://opentdb.com/api.php?amount=1${
-    //   difficulty + type + category
-    // }`;
-
     const url = `https://opentdb.com/api.php?amount=1&difficulty=easy`;
 
     // Fetch Questions
@@ -308,52 +276,7 @@ class Game {
     q.correctAnswer = q.answers.indexOf(u.correct_answer);
 
     return q;
-
-    //! Return this:
-    // const question = {
-    //   category: questionFetch.category,
-    //   difficulty: questionFetch.difficulty,
-    //   question: questionFetch.question,
-    //   answers: []
-    // };
-    // this.question = questionFetch;
-    // question.answers = questionFetch.incorrect_answers;
-    // this.answerIndex = Math.floor(
-    //   Math.random() * (question.answers.length - 1)
-    // );
-    // question.answers.splice(
-    //   this.answerIndex,
-    //   0,
-    //   questionFetch.correct_answer
-    // );
-    // console.log("CORRECT", this.answerIndex);
-
-    //! Or return this:
-    // const question = u; //? Comment me out
-    // Looks like that:
-    // {
-    //   category: "Geography",
-    //   type: "multiple",
-    //   difficulty: "medium",
-    //   question:
-    //     "What is the capital of the State of Washington, United States?",
-    //   correct_answer: "Olympia",
-    //   incorrect_answers: ["Washington D.C.", "Seattle", "Yukon"]
-    // };
-
-    // this.roundIndex++;
-    // return question;
   }
-}
-
-function compareRoundResult(a, b) {
-  if (a.points < b.points) {
-    return -1;
-  }
-  if (a.points > b.points) {
-    return 1;
-  }
-  return 0;
 }
 
 module.exports = { Game, GameMode: Mode };
