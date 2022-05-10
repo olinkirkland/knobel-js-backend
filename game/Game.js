@@ -40,7 +40,7 @@ class Game {
     this.numberOfRounds = options.numberOfRounds ? options.numberOfRounds : 10; // Number of rounds to play
     this.roundIndex = 0; // Current round index
     this.question;
-    this.answerIndex;
+    this.correctAnswer;
 
     this.coordinates = {}; // Coordinates of player cursors
 
@@ -85,7 +85,7 @@ class Game {
       player.answer = -1;
     });
 
-    this.question = this.getQuestion();
+    this.assignQuestion();
 
     this.invalidateGameData();
 
@@ -109,6 +109,43 @@ class Game {
     // End the round
     console.log("Round Ended!");
 
+    // Include the correct answer
+
+    // Apply scores to players
+    const ranks = [];
+    this.players.forEach((player) => {
+      player.answer == this.answer
+        ? ranks.push({
+            userID: player.userID,
+            correctAnswer: true,
+            points: ""
+          })
+        : ranks.push({
+            userID: player.userID,
+            correctAnswer: false,
+            points: 0
+          });
+    });
+
+    for (let i = 0; i < ranks.length; i++) {
+      ranks[i].correctAnswer
+        ? (ranks[i].points = i > 3 ? 10 : 50 - i * 10)
+        : 0;
+    }
+
+    // Add Points to each Player
+    ranks.forEach((el) =>
+      this.players
+        .find((player) => player.userID === el.userID)
+        ?.gamePoints.push(el.points)
+    );
+
+    ranks.sort(compareRoundResult);
+
+    setTimeout(queueNextRound, this.resultsDuration * 1000);
+  }
+
+  queueNextRound() {
     // Increment the round index and check if we need to end the game
     this.roundIndex++;
     if (this.roundIndex >= this.numberOfRounds) {
@@ -117,8 +154,6 @@ class Game {
     } else {
       this.startRound();
     }
-
-    this.broadcast(GameEventType.ROUND_END);
   }
 
   endGame() {
@@ -233,62 +268,25 @@ class Game {
     clearInterval(this.tickInterval);
   }
 
-  getQuestion() {
-    return {
+  assignQuestion() {
+    // Question data
+    this.question = {
       prompt: "What is the capital of France?",
       answers: ["Paris", "Lyon", "Marseille", "Toulouse"]
     };
+
+    // Set the answer (index)
+    this.answer = 0;
   }
 
-  answer(userID, answer) {
+  submitAnswer(userID, answer) {
     console.log("Answer", userID, answer);
     const player = this.players.find((p) => p.userID === userID);
     if (!player) return;
-    
+
     player.state.answer = answer;
 
     this.invalidateGameData();
-  }
-
-  async onGameResult() {
-    const roundRanking = [];
-
-    this.players.forEach((player) => {
-      player.answered ? null : player.answers.push(6);
-      player.answers && player.answers[this.roundIndex - 1] === this.answerIndex
-        ? roundRanking.push({
-            userID: player.userID,
-            correctAnswer: true,
-            points: ""
-          })
-        : roundRanking.push({
-            userID: player.userID,
-            correctAnswer: false,
-            points: 0
-          });
-    });
-
-    for (let i = 0; i < roundRanking.length; i++) {
-      roundRanking[i].correctAnswer
-        ? (roundRanking[i].points = i > 3 ? 10 : 50 - i * 10)
-        : 0;
-    }
-
-    // Add Points to each Player
-    roundRanking.forEach((el) =>
-      this.players
-        .find((player) => player.userID === el.userID)
-        ?.gamePoints.push(el.points)
-    );
-
-    roundRanking.sort(compareRoundResult);
-
-    Connection.instance.io.to(this.roomID).emit(GameEventType.RESULT, {
-      correctAnswer: this.question.correct_answer,
-      roundRanking: roundRanking
-    });
-
-    setTimeout(() => this.onGameRoundSetup(), 1000 * this.resultsDuration);
   }
 
   async onGameEnd() {
@@ -344,17 +342,11 @@ class Game {
 
       question.answers = questionFetch.incorrect_answers;
 
-      this.answerIndex = Math.floor(
-        Math.random() * (question.answers.length - 1)
-      );
+      this.answer = Math.floor(Math.random() * (question.answers.length - 1));
 
-      question.answers.splice(
-        this.answerIndex,
-        0,
-        questionFetch.correct_answer
-      );
+      question.answers.splice(this.answer, 0, questionFetch.correct_answer);
 
-      console.log("CORRECT", this.answerIndex);
+      console.log("CORRECT", this.answer);
 
       this.roundIndex++;
       return question;

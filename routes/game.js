@@ -92,7 +92,7 @@ router.post("/answer", JWT.check, async (req, res) => {
 
   if (!game) return res.status(500).send("User is not in a game");
 
-  game.answer(userID, answer);
+  game.submitAnswer(userID, answer);
   res.status(201).send("Done");
 });
 
