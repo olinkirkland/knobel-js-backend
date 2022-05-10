@@ -274,7 +274,7 @@ async function changeOnlineState(data, socketID) {
     if (!data.online) {
       if (currentUser.isGuest) {
         deleteUser(currentUser.id);
-      } else {
+      } else if (currentUser) {
         // Update users-Collection >>> Change isOnline-Boolean = false
         await UserSchema.updateOne(
           { id: currentUser.id },
