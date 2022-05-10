@@ -225,13 +225,14 @@ class Game {
     connection.on(GameEventType.MOVE_CURSOR, this.onMoveCursor.bind(this));
   }
 
-  onMoveCursor(data, socketID) {
+  onMoveCursor(data) {
+    console.time("1");
     // Move the cursor
 
     let target;
     const player = this.coordinates.find((coord, index) => {
       target = index;
-      return coord.socketID === socketID;
+      return coord.userID === data.userID;
     });
 
     if (player) {
@@ -240,6 +241,7 @@ class Game {
     }
 
     this.coordinates[target] = player;
+    console.timeEnd("1");
   }
 
   onGameTick() {

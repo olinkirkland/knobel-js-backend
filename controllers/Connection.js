@@ -83,6 +83,10 @@ class Connection extends EventEmitter {
         this.emit(GameEventType.JOIN, socket.id, data);
       });
 
+      socket.on(GameEventType.MOVE_CURSOR, (data) => {
+        this.emit(GameEventType.MOVE_CURSOR, data, socket.id);
+      });
+
       /**
        * CHAT EVENTS
        */
