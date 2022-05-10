@@ -53,7 +53,7 @@ class Game {
     // Broadcast the cursor coordinates to all players every tick
     this.tickInterval = setInterval(() => {
       this.broadcast(GameEventType.GAME_TICK, this.coordinates);
-    }, 100);
+    }, 50);
 
     this.addConnectionListeners();
   }
