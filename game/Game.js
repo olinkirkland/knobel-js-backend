@@ -50,7 +50,7 @@ class Game {
     // Broadcast the cursor coordinates to all players every tick
     this.tickInterval = setInterval(() => {
       this.broadcast(GameEventType.GAME_TICK, this.coordinates);
-    }, 100);
+    }, 50);
 
     this.addConnectionListeners();
   }
@@ -268,15 +268,13 @@ class Game {
     clearInterval(this.tickInterval);
   }
 
-  assignQuestion() {
-    // Question data
-    this.question = {
-      prompt: "What is the capital of France?",
-      answers: ["Paris", "Lyon", "Marseille", "Toulouse"]
-    };
+  getQuestion() {
+    // return {
+    //   prompt: "What is the capital of France?",
+    //   answers: ["Paris", "Lyon", "Marseille", "Toulouse"]
+    // };
 
-    // Set the answer (index)
-    this.answer = 0;
+    return this.getQuestions();
   }
 
   submitAnswer(userID, answer) {
@@ -331,24 +329,39 @@ class Game {
       // Fetch Questions
       const questionFetch = (await axios.get(url)).data.results[0];
 
-      const question = {
-        category: questionFetch.category,
-        difficulty: questionFetch.difficulty,
-        question: questionFetch.question,
-        answers: []
-      };
+      //! Return this:
+      // const question = {
+      //   category: questionFetch.category,
+      //   difficulty: questionFetch.difficulty,
+      //   question: questionFetch.question,
+      //   answers: []
+      // };
+      // this.question = questionFetch;
+      // question.answers = questionFetch.incorrect_answers;
+      // this.answerIndex = Math.floor(
+      //   Math.random() * (question.answers.length - 1)
+      // );
+      // question.answers.splice(
+      //   this.answerIndex,
+      //   0,
+      //   questionFetch.correct_answer
+      // );
+      // console.log("CORRECT", this.answerIndex);
 
-      this.question = questionFetch;
+      //! Or return this:
+      const question = questionFetch; //? Comment me out
+      // Looks like that:
+      // {
+      //   category: "Geography",
+      //   type: "multiple",
+      //   difficulty: "medium",
+      //   question:
+      //     "What is the capital of the State of Washington, United States?",
+      //   correct_answer: "Olympia",
+      //   incorrect_answers: ["Washington D.C.", "Seattle", "Yukon"]
+      // };
 
-      question.answers = questionFetch.incorrect_answers;
-
-      this.answer = Math.floor(Math.random() * (question.answers.length - 1));
-
-      question.answers.splice(this.answer, 0, questionFetch.correct_answer);
-
-      console.log("CORRECT", this.answer);
-
-      this.roundIndex++;
+      // this.roundIndex++;
       return question;
     } else {
       return "end";
