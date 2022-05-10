@@ -45,6 +45,8 @@ class Game {
     this.roundIndex = 0; // Current round index
     this.question;
 
+    this.coordinates = [];
+
     this.questionDuration = 3; // Questions will be shown for this amount of seconds
     this.resultsDuration = 3; // Round-Results will be shown for this amount of seconds
 
@@ -54,7 +56,10 @@ class Game {
   }
 
   start() {
-    if (this.gameMode == Mode.GAME) {console.log('Cannot start the game; game is already started');return;}
+    if (this.gameMode == Mode.GAME) {
+      console.log("Cannot start the game; game is already started");
+      return;
+    }
 
     // Start the game
     this.gameMode = Mode.GAME;
@@ -205,12 +210,26 @@ class Game {
     connection.on(GameEventType.MOVE_CURSOR, this.onMoveCursor.bind(this));
   }
 
-  onMoveCursor(data) {
+  onMoveCursor(data, socketID) {
     // Move the cursor
+
+    let target;
+    const player = this.coordinates.find((coord, index) => {
+      target = index;
+      return coord.socketID === socketID;
+    });
+
+    if (player) {
+      player.x = data.x;
+      player.y = data.y;
+    }
+
+    this.coordinates[target] = player;
   }
 
   onGameTick() {
-    this.broadcast(GameEventType.GAME_TICK, {});
+    console.log(tick);
+    this.broadcast(GameEventType.GAME_TICK, this.coordinates);
   }
 
   dispose() {
