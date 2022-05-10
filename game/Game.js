@@ -9,7 +9,7 @@ const User = require("../classes/User");
 const UserSchema = require("../models/UserSchema");
 const axios = require("axios");
 const ResourceHandler = require("../controllers/ResourceHandler");
-const { shuffle } = require("../utils/Util");
+const { shuffle, isValidQuestion } = require("../utils/Util");
 
 class Mode {
   static GAME = "mode-game";
@@ -20,6 +20,7 @@ class Player {
   user; // Reference to the user
   isPlaying; // True: Player is currently playing, False: Player is spectating
   state; // Current player state
+  points;
 }
 
 class Game {
@@ -53,6 +54,8 @@ class Game {
       this.broadcast(GameEventType.GAME_TICK, this.coordinates);
     }, 50);
 
+    this.disposed = false;
+
     this.addConnectionListeners();
   }
 
@@ -79,12 +82,12 @@ class Game {
   }
 
   async startRound() {
+    if (this.disposed) return;
+
     console.log(`Starting round ${this.roundIndex}/${this.numberOfRounds}`);
 
     // Reset player answers
-    this.players.forEach((player) => {
-      player.answer = -1;
-    });
+    this.players.forEach((player) => (player.answer = -1));
 
     await this.assignQuestion();
     this.invalidateGameData();
@@ -110,6 +113,7 @@ class Game {
           this.correctAnswer
         }. Correct? ${player.answer === this.correctAnswer}`
       );
+
       if (player.answer === this.correctAnswer) player.points += 5;
     });
 
@@ -162,7 +166,9 @@ class Game {
         return {
           isPlaying: player.isPlaying,
           state: player.state,
-          user: player.user.toPlayerData()
+          user: player.user.toPlayerData(),
+          points: player.points,
+          answer: player.answer
         };
       }),
       gameMode: this.gameMode,
@@ -244,6 +250,7 @@ class Game {
   dispose() {
     // Dispose of the game
     clearInterval(this.tickInterval);
+    this.disposed = true;
   }
 
   async assignQuestion() {
@@ -264,10 +271,15 @@ class Game {
   }
 
   async createQuestion() {
-    const url = `https://opentdb.com/api.php?amount=1&difficulty=easy`;
+    // Category 22 is geography
+    const url = `https://opentdb.com/api.php?amount=1&difficulty=easy&type=multiple&category=22`;
 
     // Fetch Questions
-    const u = (await axios.get(url)).data.results[0];
+
+    let u;
+    do {
+      u = (await axios.get(url)).data.results[0];
+    } while (!isValidQuestion(u));
     const q = {
       prompt: u.question,
       answers: shuffle(u.incorrect_answers.concat(u.correct_answer))
