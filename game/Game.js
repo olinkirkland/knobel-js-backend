@@ -234,17 +234,19 @@ class Game {
   }
 
   getQuestion() {
-    return {
-      prompt: "What is the capital of France?",
-      answers: ["Paris", "Lyon", "Marseille", "Toulouse"]
-    };
+    // return {
+    //   prompt: "What is the capital of France?",
+    //   answers: ["Paris", "Lyon", "Marseille", "Toulouse"]
+    // };
+
+    return this.getQuestions();
   }
 
   answer(userID, answer) {
     console.log("Answer", userID, answer);
     const player = this.players.find((p) => p.userID === userID);
     if (!player) return;
-    
+
     player.state.answer = answer;
 
     this.invalidateGameData();
@@ -333,28 +335,37 @@ class Game {
       // Fetch Questions
       const questionFetch = (await axios.get(url)).data.results[0];
 
-      const question = {
-        category: questionFetch.category,
-        difficulty: questionFetch.difficulty,
-        question: questionFetch.question,
-        answers: []
-      };
+      //! Return this:
+      // const question = {
+      //   category: questionFetch.category,
+      //   difficulty: questionFetch.difficulty,
+      //   question: questionFetch.question,
+      //   answers: []
+      // };
+      // this.question = questionFetch;
+      // question.answers = questionFetch.incorrect_answers;
+      // this.answerIndex = Math.floor(
+      //   Math.random() * (question.answers.length - 1)
+      // );
+      // question.answers.splice(
+      //   this.answerIndex,
+      //   0,
+      //   questionFetch.correct_answer
+      // );
+      // console.log("CORRECT", this.answerIndex);
 
-      this.question = questionFetch;
-
-      question.answers = questionFetch.incorrect_answers;
-
-      this.answerIndex = Math.floor(
-        Math.random() * (question.answers.length - 1)
-      );
-
-      question.answers.splice(
-        this.answerIndex,
-        0,
-        questionFetch.correct_answer
-      );
-
-      console.log("CORRECT", this.answerIndex);
+      //! Or return this:
+      const question = questionFetch; //* Comment me out
+      // Looks like that:
+      // {
+      //   category: "Geography",
+      //   type: "multiple",
+      //   difficulty: "medium",
+      //   question:
+      //     "What is the capital of the State of Washington, United States?",
+      //   correct_answer: "Olympia",
+      //   incorrect_answers: ["Washington D.C.", "Seattle", "Yukon"]
+      // };
 
       this.roundIndex++;
       return question;
