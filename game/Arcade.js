@@ -55,7 +55,6 @@ function joinGame(user, gameID) {
 
   // Add user to game
   game.addPlayer(user);
-  game.invalidateGameData();
 
   console.log(`🎮 User ${user.username} joined game ${gameID}`);
   return true;
