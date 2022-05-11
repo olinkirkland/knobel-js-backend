@@ -10,10 +10,10 @@ async function giveItem(userId, itemId) {
   userSchema.save();
 
   // Console log inventory
-  console.log(
-    "🗃️",
-    userSchema.inventory.map((item) => item)
-  );
+  // console.log(
+  //   "🗃️",
+  //   userSchema.inventory.map((item) => item)
+  // );
   Connection.invalidateUserBySocketID(userSchema.socketID);
 }
 
@@ -54,6 +54,7 @@ function giveLevelUpRewards(userSchema) {
 }
 
 async function giveGold(userId, amount) {
+  console.log('giving', amount, 'gold to', userId);
   // Add an amount of gold to the user's gold
   const userSchema = await UserSchema.findOne({ id: userId });
   let gold = parseInt(userSchema.gold);
