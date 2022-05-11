@@ -6,19 +6,61 @@
       "featured": true,
       "discounts": [
         {
-          "id": "XII2NZXy4WPGry0P_v3lo",
+          "id": "Q8OK-24Eq",
           "percent": 100
         },
         {
-          "id": "W1ybwi-4MeV9rXK-xW9lW",
+          "id": "YYLG-dTj5",
           "percent": 50
         }
       ]
     }
   ],
   "prices": [
-    { "id": "jRsK5vFBuCOB_K5rENykE", "price": 200 },
-    { "id": "XII2NZXy4WPGry0P_v3lo", "price": 200 },
-    { "id": "W1ybwi-4MeV9rXK-xW9lW", "price": 200 }
+    { "id": "Q8OK-24Eq", "price": 500 },
+    { "id": "YYLG-dTj5", "price": 500 },
+    { "id": "Ynmr-Vnp0", "price": 150 },
+    { "id": "6o99-OgKj", "price": 150 },
+    { "id": "lAaK-Dezj", "price": 150 },
+    { "id": "WYYx-k6Bl", "price": 150 },
+    { "id": "U1Km-qAeN", "price": 150 },
+    { "id": "UK87-Ojhs", "price": 150 },
+    { "id": "Oleu-mVBt", "price": 300 },
+    { "id": "qWqW-UveS", "price": 300 },
+    { "id": "hL0q-KHyj", "price": 150 },
+    { "id": "ZjWY-559U", "price": 150 },
+    { "id": "2eCm-MAws", "price": 500 },
+    { "id": "ibGS-6Bjc", "price": 500 },
+    { "id": "Pu1h-C0iy", "price": 500 },
+    { "id": "4gMz-7lly", "price": 100 },
+    { "id": "gdW7-TJ2s", "price": 250 },
+    { "id": "jkKG-duLf", "price": 250 },
+    { "id": "MPR6-uyhX", "price": 250 },
+    { "id": "uWOH-hXig", "price": 250 },
+    { "id": "4dHO-hXoe", "price": 350 },
+    { "id": "beQ9-2SmO", "price": 200 },
+    { "id": "GobD-Q55w", "price": 200 },
+    { "id": "R9OC-xw8g", "price": 200 },
+    { "id": "vxeN-fnax", "price": 200 },
+    { "id": "SEsp-Kzro", "price": 200 },
+    { "id": "FTkA-q8uQ", "price": 350 },
+    { "id": "aYEo-4MEy", "price": 150 },
+    { "id": "ioJp-IGWD", "price": 150 },
+    { "id": "AGKi-4sNV", "price": 150 },
+    { "id": "E2cw-zPu7", "price": 150 },
+    { "id": "Cszi-CY2z", "price": 150 },
+    { "id": "w6DX-sOwN", "price": 150 },
+    { "id": "EEoy-n0mL", "price": 150 },
+    { "id": "uGVh-6sLQ", "price": 150 },
+    { "id": "jNwF-dOci", "price": 150 },
+    { "id": "TatE-UdTY", "price": 400 },
+    { "id": "uEt8-KKW9", "price": 400 },
+    { "id": "inmQ-K0Zd", "price": 150 },
+    { "id": "nbKnDUBgYwiQcUJjI8gYG", "price": 400 },
+    { "id": "KgkdXnvuUjgFg9mFsF_o1", "price": 400 },
+    { "id": "bWlODlitPpTpauqu7egQW", "price": 400 },
+    { "id": "249573cc1e6ac120X00a2", "price": 400 },
+    { "id": "nhXUB0VIsA7ST25S-wG6e", "price": 400 },
+    { "id": "absdidf9xc-sdf98xiddk", "price": 400 }
   ]
 }

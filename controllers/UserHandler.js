@@ -44,13 +44,11 @@ async function createNewUser(password, isGuest, email) {
     friendRequestsIncoming: [],
     friendRequestsOutgoing: [],
     nameChanges: 0,
-    currentAvatar: "oO7GXCjER0DbQioa2Mwqx",
+    currentAvatar: "inmQ-K0Zd",
     currentWallpaper: "nbKnDUBgYwiQcUJjI8gYG",
     currentSkin: startSkins[Math.floor(Math.random() * 3)], // Choose random Skin
     inventory: [
-      "oO7GXCjER0DbQioa2Mwqx", // Viking (Avatar)
-      "Gpm00ST2s7WypfINoDx4i", // Day of the Dead (Avatar)
-      "LgzPFDYuFg53oV8Q0CnG3", // Corgi (Avatar)
+      "inmQ-K0Zd",
       "nbKnDUBgYwiQcUJjI8gYG", // Prism (Wallpaper)
       "KgkdXnvuUjgFg9mFsF_o1" // Embroidery (Wallpaper)
     ],
