@@ -43,6 +43,7 @@ class Game {
     this.roundIndex = 0; // Current round index
     this.question;
     this.correctAnswer;
+    this.seconds = -1; // Current seconds to start a countdown from, -1 means no countdown
 
     this.coordinates = {}; // Coordinates of player cursors
 
@@ -92,6 +93,7 @@ class Game {
     await this.assignQuestion();
     this.invalidateGameData();
 
+    this.seconds = this.questionDuration;
     this.timer = setTimeout(
       this.endRound.bind(this),
       1000 * this.questionDuration
@@ -103,6 +105,8 @@ class Game {
   }
 
   endRound() {
+    this.seconds = -1;
+
     // Include the correct answer
     this.question.correctAnswer = this.correctAnswer;
 
@@ -125,10 +129,13 @@ class Game {
 
     this.invalidateGameData();
 
+    // this.seconds = this.resultsDuration;
     setTimeout(this.queueNextRound.bind(this), this.resultsDuration * 1000);
   }
 
   queueNextRound() {
+    this.seconds = -1;
+
     // Increment the round index and check if we need to end the game
     this.roundIndex++;
     if (this.roundIndex >= this.numberOfRounds) {
@@ -174,7 +181,8 @@ class Game {
       gameMode: this.gameMode,
       roundIndex: this.roundIndex + 1,
       numberOfRounds: this.numberOfRounds,
-      question: this.question
+      question: this.question,
+      seconds: this.seconds
     };
   }
 
@@ -201,7 +209,7 @@ class Game {
     });
 
     // Subscribe the player's socket to the gameID room so they are included in game broadcasts
-    player.socket.join(this.gameID);
+    player.socket?.join(this.gameID);
     this.players.push(player);
 
     setTimeout(this.invalidateGameData.bind(this), 200);
@@ -275,7 +283,6 @@ class Game {
     const url = `https://opentdb.com/api.php?amount=1&difficulty=easy&type=multiple&category=22`;
 
     // Fetch Questions
-
     let u;
     do {
       u = (await axios.get(url)).data.results[0];
