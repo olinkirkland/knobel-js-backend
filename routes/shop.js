@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 
 const JWT = require("../controllers/JWT");
-const gameHandler = require("../game/GameData");
 const UserHandler = require("../controllers/UserHandler");
 const Arcade = require("../game/Arcade");
 

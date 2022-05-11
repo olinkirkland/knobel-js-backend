@@ -36,10 +36,10 @@ class Game {
     this.players = []; // Array of current players
     this.gameMode = Mode.LOBBY; // Current mode of the game
 
-    this.category = options.category;
+    this.categories = options.categories;
     this.difficulty = options.difficulty;
 
-    this.numberOfRounds = options.numberOfRounds ? options.numberOfRounds : 3; // Number of rounds to play
+    this.numberOfRounds = options.numberOfRounds ? options.numberOfRounds : 5; // Number of rounds to play
     this.roundIndex = 0; // Current round index
     this.question;
     this.correctAnswer;
@@ -236,7 +236,8 @@ class Game {
       roundIndex: this.roundIndex + 1,
       numberOfRounds: this.numberOfRounds,
       question: this.question,
-      seconds: this.seconds
+      seconds: this.seconds,
+      categories: this.categories
     };
   }
 
@@ -333,8 +334,21 @@ class Game {
   }
 
   async createQuestion() {
-    // Category 22 is geography
-    const url = `https://opentdb.com/api.php?amount=1&difficulty=easy&type=multiple&category=22`;
+    const difficultyStr = this.difficulty
+      ? `&difficulty=${this.difficulty}`
+      : "";
+
+    // const type = options.type ? `&type=${options.type}` : "&type=multiple";
+
+    const categoryStr = this.categories
+      ? `&category=${
+          this.categories[Math.floor(Math.random() * this.categories.length)]
+        }`
+      : "";
+
+    const url =
+      "https://opentdb.com/api.php?amount=1" + difficultyStr + categoryStr;
+    console.log(url);
 
     // Fetch Questions
     let u;
