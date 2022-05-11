@@ -46,7 +46,6 @@ router.post("/buy", JWT.check, async (req, res) => {
 });
 
 function getItemPrice(item) {
-  console.log(item.id, "base price:", item.price);
   let discount = 0;
   shop.sales.forEach((sale) => {
     sale.discounts.forEach((d) => {
@@ -55,7 +54,6 @@ function getItemPrice(item) {
   });
 
   let price = item.price - item.price * (discount / 100);
-  console.log("with a discount of", `${discount}%`, "the price is:", price);
   return price;
 }
 

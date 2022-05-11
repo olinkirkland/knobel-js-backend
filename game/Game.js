@@ -39,7 +39,7 @@ class Game {
     this.category = options.category;
     this.difficulty = options.difficulty;
 
-    this.numberOfRounds = options.numberOfRounds ? options.numberOfRounds : 10; // Number of rounds to play
+    this.numberOfRounds = options.numberOfRounds ? options.numberOfRounds : 3; // Number of rounds to play
     this.roundIndex = 0; // Current round index
     this.question;
     this.correctAnswer;
@@ -54,7 +54,7 @@ class Game {
     // Broadcast the cursor coordinates to all players every tick
     this.tickInterval = setInterval(() => {
       this.broadcast(GameEventType.GAME_TICK, this.coordinates);
-    }, 50); 
+    }, 50);
 
     this.disposed = false;
 
@@ -75,6 +75,7 @@ class Game {
     this.spectators = [];
     this.players.forEach((player) => {
       player.points = 0;
+      player.rewards = null;
       player.isPlaying = true;
     });
 
@@ -151,8 +152,59 @@ class Game {
     // End the game
     this.gameMode = Mode.LOBBY;
 
-    this.broadcast(GameEventType.END_GAME);
+    // Sort players by points
+    this.players.sort((a, b) => a.points - b.points);
+
+    // Reward players
+    this.players.forEach((player, index) => {
+      player.rewards = this.getRewards(
+        player.points,
+        this.players.length,
+        index
+      );
+
+      ResourceHandler.giveGold(player.user.id, player.rewards.gold);
+      ResourceHandler.giveExperience(
+        player.user.id,
+        player.rewards.experience,
+        false
+      );
+    });
+
     this.invalidateGameData();
+  }
+
+  getRewards(points, totalPlayers, rank) {
+    if (points == 0)
+      return {
+        gold: 0,
+        experience: 0
+      };
+
+    let gold = 10;
+    let experience = 20;
+
+    gold += Math.floor(points / 2);
+    experience += points * 2;
+
+    if (totalPlayers > 1) {
+      if (rank == 1) {
+        gold += 40;
+        experience += 50;
+      }
+
+      if (rank == 2) {
+        gold += 20;
+        experience += 30;
+      }
+
+      if (rank == 3) {
+        gold += 10;
+        experience += 20;
+      }
+    }
+
+    return { gold: gold, experience: experience };
   }
 
   toListItem() {
@@ -176,6 +228,7 @@ class Game {
           state: player.state,
           user: player.user.toPlayerData(),
           points: player.points,
+          rewards: player.rewards,
           answer: player.answer
         };
       }),

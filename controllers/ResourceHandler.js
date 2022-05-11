@@ -30,7 +30,7 @@ async function giveExperience(userId, amount) {
   );
 
   experience += parseInt(amount);
-  while (experience > experienceNeededFromLevel(userSchema.level)) {
+  while (experience >= experienceNeededFromLevel(userSchema.level)) {
     // Level up
     userSchema.level = parseInt(userSchema.level) + 1;
     experience -= experienceNeededFromLevel(userSchema.level);
@@ -50,11 +50,18 @@ async function giveExperience(userId, amount) {
 
 function giveLevelUpRewards(userSchema) {
   // Give the user some rewards for level up
-  userSchema.gold += 10;
+  const gold = 100 + userSchema.level * 20;
+  giveGold(userSchema.id, gold);
+
+  if (userSchema.socketID)
+    Connection.getSocket(userSchema.socketID).emit("level-up", {
+      level: userSchema.level,
+      gold: gold
+    });
 }
 
 async function giveGold(userId, amount) {
-  console.log('giving', amount, 'gold to', userId);
+  console.log("giving", amount, "gold to", userId);
   // Add an amount of gold to the user's gold
   const userSchema = await UserSchema.findOne({ id: userId });
   let gold = parseInt(userSchema.gold);
