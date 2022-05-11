@@ -36,7 +36,7 @@ async function createNewUser(password, isGuest, email) {
     id: id,
     token: JWT.generate(username, email, id), // Generate new Token
     experience: 0,
-    gold: 0,
+    gold: 200,
     level: 1,
     isOnline: false,
     isGuest: isGuest,
