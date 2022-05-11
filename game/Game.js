@@ -47,6 +47,7 @@ class Game {
 
     this.coordinates = {}; // Coordinates of player cursors
 
+    //* Modifie This Variables!
     this.questionDuration = 7; // Questions will be shown for this amount of seconds
     this.resultsDuration = 3; // Round-Results will be shown for this amount of seconds
 
