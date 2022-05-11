@@ -110,7 +110,9 @@ async function getUserSchemaBySocketID(socketID) {
 
 async function getUserByMail(email) {
   // Get all Userdata´s from users-Collection, including critical data (like Password)
-  return await UserSchema.findOne({ email: email });
+  const user = await UserSchema.findOne({ email: email });
+
+  return user;
 }
 
 async function deleteUser(id) {
@@ -272,7 +274,7 @@ async function changeOnlineState(data, socketID) {
     }
 
     if (!data.online) {
-      if (currentUser.isGuest) {
+      if (currentUser && currentUser.isGuest) {
         deleteUser(currentUser.id);
       } else if (currentUser) {
         // Update users-Collection >>> Change isOnline-Boolean = false

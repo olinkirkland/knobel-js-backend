@@ -1,15 +1,15 @@
-require('dotenv').config();
+require("dotenv").config();
 
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
 
 // Configs for Cookie-Security
 const options = {
   maxAge: 1000 * 60 * 60 * 24, // Expires after 24h
   httpOnly: true,
   signed: true,
-  sameSite: 'none',
+  sameSite: "none",
   secure: true,
-  path: '/',
+  path: "/"
 };
 
 const maxAge = 3600; // Define the the age, the Token should get refreshed! <<<<<<<<<<<<
@@ -22,7 +22,7 @@ function generate(username, email, id) {
     {
       username: username,
       email: email,
-      id: id,
+      id: id
     },
     process.env.SECRET
   );
@@ -40,6 +40,8 @@ function check(req, res, next) {
     return;
   }
 
+  console.log("JWT-check");
+
   return jwt.verify(
     token,
     process.env.SECRET,
@@ -49,7 +51,7 @@ function check(req, res, next) {
 
       if (currentTime - decode.iat >= maxAge) {
         res.cookie(
-          'Token',
+          "Token",
           generate(decode.username, decode.email, decode.id),
           options
         );
@@ -58,9 +60,9 @@ function check(req, res, next) {
       if (err) {
         // Handle Errors
 
-        if (err.name === 'TokenExpiredError') {
+        if (err.name === "TokenExpiredError") {
           res.send(`TokenExpiredError: Expired at ${err.expiredAt}`);
-        } else if (err.name === 'invalid token') {
+        } else if (err.name === "invalid token") {
           res.send(`Token is not Valid!`);
         } else {
           res.send(err);

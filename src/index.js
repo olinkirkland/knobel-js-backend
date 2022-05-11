@@ -14,7 +14,7 @@ const usersRouter = require("../routes/users");
 const gameRoute = require("../routes/game").router;
 const friendsRoute = require("../routes/friends");
 const cheatRoute = require("../routes/cheat");
-const shopRoute = require("../routes/shopRoute");
+const shop = require("../routes/shop");
 
 // Connection
 const connection = Connection.instance;
@@ -23,7 +23,14 @@ connection.connect(app);
 // Middlewares
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://localhost:8000"],
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:8000",
+      "http://olinkirk.land",
+      "http://olinkirk.land/dont-fall/",
+      "https://olinkirk.land",
+      "https://olinkirk.land/dont-fall/"
+    ],
     credentials: true
   })
 );
@@ -34,7 +41,7 @@ app.use("/users", usersRouter);
 app.use("/game", gameRoute);
 app.use("/friends", friendsRoute);
 app.use("/cheat", cheatRoute);
-app.use("/shop", shopRoute);
+app.use("/shop", shop);
 
 app.get("/testcors", (req, res) => {
   res.send("Hello world!!!");
