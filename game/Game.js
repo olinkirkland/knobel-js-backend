@@ -209,7 +209,7 @@ class Game {
     });
 
     // Subscribe the player's socket to the gameID room so they are included in game broadcasts
-    player.socket.join(this.gameID);
+    player.socket?.join(this.gameID);
     this.players.push(player);
 
     setTimeout(this.invalidateGameData.bind(this), 200);
