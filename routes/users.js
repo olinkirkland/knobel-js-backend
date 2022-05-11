@@ -30,10 +30,7 @@ router.post("/login", DataValidator.checkEmail, (req, res) => {
     });
   } else {
     UserHandler.getUserByMail(req.body.email.toLowerCase()).then((response) => {
-      if (
-        response !== null ||
-        (response !== "undefined" && response.username)
-      ) {
+      if (!(response == null || response == "undefined")) {
         const userSchema = response;
 
         // check Password with BCrypt and recieve new Token

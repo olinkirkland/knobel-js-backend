@@ -110,7 +110,9 @@ async function getUserSchemaBySocketID(socketID) {
 
 async function getUserByMail(email) {
   // Get all Userdata´s from users-Collection, including critical data (like Password)
-  return await UserSchema.findOne({ email: email });
+  const user = await UserSchema.findOne({ email: email });
+
+  return user;
 }
 
 async function deleteUser(id) {
