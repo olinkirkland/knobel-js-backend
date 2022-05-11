@@ -29,7 +29,9 @@ app.use(
       "http://olinkirk.land",
       "http://olinkirk.land/dont-fall/",
       "https://olinkirk.land",
-      "https://olinkirk.land/dont-fall/"
+      "https://olinkirk.land/dont-fall/",
+      "https://teleturbis.github.io/bugFixes/",
+      "http://teleturbis.github.io/bugFixes/"
     ],
     credentials: true
   })
