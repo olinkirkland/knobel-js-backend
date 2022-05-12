@@ -288,7 +288,7 @@ class Game {
       );
     });
 
-    player.socket.leave(this.gameID);
+    if (player.socket) player.socket.leave(this.gameID);
 
     // Remove the player
     this.players = this.players.filter((p) => p.user.id !== user.id);
