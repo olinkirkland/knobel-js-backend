@@ -340,11 +340,12 @@ class Game {
 
     // const type = options.type ? `&type=${options.type}` : "&type=multiple";
 
-    const categoryStr = this.categories
-      ? `&category=${
-          this.categories[Math.floor(Math.random() * this.categories.length)]
-        }`
-      : "";
+    const categoryStr =
+      this.categories && this.categories.length > 0
+        ? `&category=${
+            this.categories[Math.floor(Math.random() * this.categories.length)]
+          }`
+        : "";
 
     const url =
       "https://opentdb.com/api.php?amount=1" + difficultyStr + categoryStr;
