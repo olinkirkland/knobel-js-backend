@@ -40,22 +40,12 @@ function check(req, res, next) {
     return;
   }
 
-  console.log("JWT-check");
-
   return jwt.verify(
     token,
     process.env.SECRET,
     { maxAge: maxAgeToken },
     (err, decode) => {
       const currentTime = new Date().getTime() / 1000;
-
-      if (currentTime - decode.iat >= maxAge) {
-        res.cookie(
-          "Token",
-          generate(decode.username, decode.email, decode.id),
-          options
-        );
-      }
 
       if (err) {
         // Handle Errors
@@ -69,7 +59,13 @@ function check(req, res, next) {
         }
       } else {
         // If Token is valid
-
+        if (currentTime - decode.iat >= maxAge) {
+          res.cookie(
+            "Token",
+            generate(decode.username, decode.email, decode.id),
+            options
+          );
+        }
         next();
       }
     }
