@@ -33,7 +33,9 @@ app.use(
       "https://teleturbis.github.io/bugFixes/",
       "http://teleturbis.github.io/bugFixes/",
       "https://teleturbis.github.io",
-      "http://teleturbis.github.io"
+      "http://teleturbis.github.io",
+      "https://knobel.ninja/",
+      "http://knobel.ninja/"
     ],
     credentials: true
   })
