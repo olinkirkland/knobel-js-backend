@@ -7,9 +7,10 @@ const mongoose = require("mongoose");
 const UserController = require("../controllers/UserController");
 const gameHandler = require("../controllers/gameHandler");
 const gmaeRoute = require("../routes/game");
+const { config } = require("dotenv");
 
 const port = process.env.PORT || 5000;
-const dbURI = `mongodb+srv://olinkirkland:${process.env.MONGO_PW}@cluster0.p04kd.mongodb.net/?retryWrites=true&w=majority`;
+const dbURI = process.env.DB_URI;
 
 function connect(app) {
   const httpServer = http.createServer(app);

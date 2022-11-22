@@ -6,7 +6,7 @@ const User = require("../classes/User");
 const UserSchema = require("../models/UserSchema");
 
 const PORT = process.env.PORT || 5000;
-const DATABASE_URL = `mongodb+srv://admin:${process.env.MONGO_PW}@cluster0.s1t7x.mongodb.net/test1?retryWrites=true&w=majority`;
+const DATABASE_URL = process.env.DB_URI;
 
 class ConnectionEventType {
   static CONNECT = "socket-connect"; // Socket connected
