@@ -27,15 +27,15 @@ app.use(
       "http://localhost:3000",
       "http://localhost:8000",
       "http://olinkirk.land",
-      "http://olinkirk.land/dont-fall/",
       "https://olinkirk.land",
-      "https://olinkirk.land/dont-fall/",
-      "https://teleturbis.github.io/bugFixes/",
-      "http://teleturbis.github.io/bugFixes/",
-      "https://teleturbis.github.io",
+      "http://olinkirk.land/dont-fall",
+      "https://olinkirk.land/dont-fall",
+      "http://teleturbis.github.io/bugFixes",
+      "https://teleturbis.github.io/bugFixes",
       "http://teleturbis.github.io",
-      "https://knobel.ninja/",
-      "http://knobel.ninja/"
+      "https://teleturbis.github.io",
+      "http://knobel.ninja",
+      "https://knobel.ninja"
     ],
     credentials: true
   })
