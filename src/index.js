@@ -30,6 +30,8 @@ app.use(
       "https://olinkirk.land",
       "http://olinkirk.land/dont-fall",
       "https://olinkirk.land/dont-fall",
+      "http://olinkirkland.github.io/dont-fall",
+      "https://olinkirkland.github.io/dont-fall",
       "http://teleturbis.github.io/bugFixes",
       "https://teleturbis.github.io/bugFixes",
       "http://teleturbis.github.io",
@@ -49,7 +51,7 @@ app.use("/friends", friendsRoute);
 app.use("/cheat", cheatRoute);
 app.use("/shop", shop);
 
-app.get("/testcors", (req, res) => {
+app.get("/", (req, res) => {
   res.send("Hello world!!!");
 });
 
